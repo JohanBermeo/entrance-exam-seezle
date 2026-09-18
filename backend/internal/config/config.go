@@ -18,6 +18,11 @@ const (
 	defaultWriteTimeout      = 15 * time.Second
 	defaultIdleTimeout       = 60 * time.Second
 	defaultShutdownTimeout   = 10 * time.Second
+	defaultMaxWorkers        = 8
+	defaultCalcTimeout       = 30 * time.Second
+	defaultMaxBodyBytes      = int64(1 << 20)
+	defaultMaxNodes          = 100
+	defaultMaxDepth          = 50
 )
 
 // Config contains the runtime settings required by the HTTP server.
@@ -30,6 +35,16 @@ type Config struct {
 	WriteTimeout      time.Duration
 	IdleTimeout       time.Duration
 	ShutdownTimeout   time.Duration
+	// MaxWorkers bounds concurrent node executions per calculation request.
+	MaxWorkers int
+	// CalculationTimeout is the deadline applied to POST /v1/calculations.
+	CalculationTimeout time.Duration
+	// MaxBodyBytes caps the calculation request payload size.
+	MaxBodyBytes int64
+	// MaxNodes caps the operations compiled from an expression.
+	MaxNodes int
+	// MaxDepth caps the expression AST depth accepted by the compiler.
+	MaxDepth int
 }
 
 // Load reads configuration from environment variables and applies safe defaults.
@@ -64,16 +79,41 @@ func Load() (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
+	maxWorkers, err := loadPositiveInt("CALC_MAX_WORKERS", defaultMaxWorkers)
+	if err != nil {
+		return Config{}, err
+	}
+	calcTimeout, err := loadDuration("CALC_TIMEOUT", defaultCalcTimeout)
+	if err != nil {
+		return Config{}, err
+	}
+	maxBodyBytes, err := loadPositiveInt64("CALC_MAX_BODY_BYTES", defaultMaxBodyBytes)
+	if err != nil {
+		return Config{}, err
+	}
+	maxNodes, err := loadPositiveInt("CALC_MAX_NODES", defaultMaxNodes)
+	if err != nil {
+		return Config{}, err
+	}
+	maxDepth, err := loadPositiveInt("CALC_MAX_DEPTH", defaultMaxDepth)
+	if err != nil {
+		return Config{}, err
+	}
 
 	return Config{
-		Port:              port,
-		Environment:       valueOrDefault("APP_ENV", defaultEnvironment),
-		LogLevel:          level,
-		ReadHeaderTimeout: readHeaderTimeout,
-		ReadTimeout:       readTimeout,
-		WriteTimeout:      writeTimeout,
-		IdleTimeout:       idleTimeout,
-		ShutdownTimeout:   shutdownTimeout,
+		Port:               port,
+		Environment:        valueOrDefault("APP_ENV", defaultEnvironment),
+		LogLevel:           level,
+		ReadHeaderTimeout:  readHeaderTimeout,
+		ReadTimeout:        readTimeout,
+		WriteTimeout:       writeTimeout,
+		IdleTimeout:        idleTimeout,
+		ShutdownTimeout:    shutdownTimeout,
+		MaxWorkers:         maxWorkers,
+		CalculationTimeout: calcTimeout,
+		MaxBodyBytes:       maxBodyBytes,
+		MaxNodes:           maxNodes,
+		MaxDepth:           maxDepth,
 	}, nil
 }
 
@@ -105,6 +145,30 @@ func loadDuration(name string, fallback time.Duration) (time.Duration, error) {
 		return 0, fmt.Errorf("%s must be a positive duration", name)
 	}
 	return duration, nil
+}
+
+func loadPositiveInt(name string, fallback int) (int, error) {
+	raw := strings.TrimSpace(os.Getenv(name))
+	if raw == "" {
+		return fallback, nil
+	}
+	value, err := strconv.Atoi(raw)
+	if err != nil || value < 1 {
+		return 0, fmt.Errorf("%s must be a positive integer", name)
+	}
+	return value, nil
+}
+
+func loadPositiveInt64(name string, fallback int64) (int64, error) {
+	raw := strings.TrimSpace(os.Getenv(name))
+	if raw == "" {
+		return fallback, nil
+	}
+	value, err := strconv.ParseInt(raw, 10, 64)
+	if err != nil || value < 1 {
+		return 0, fmt.Errorf("%s must be a positive integer", name)
+	}
+	return value, nil
 }
 
 func valueOrDefault(name, fallback string) string {
