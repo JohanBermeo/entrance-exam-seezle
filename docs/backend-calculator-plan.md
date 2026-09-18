@@ -181,7 +181,7 @@ Módulo obligatorio en v1 bajo `internal/domain/expression/`. Pipeline: **lexer*
 
 ## Esquema de ramificación
 
-Trunk en `main`. Ramas cortas `feat/`, `fix/`, `chore/`, `docs/`. PR pequeño, revisión y CI verde (la PR la abre el agente con descripción del hito; revisión y merge los gestiona el humano; el agente espera aprobación entre hitos). Detalle en [development-protocol.md](./development-protocol.md).
+Trunk en `main`. Ramas cortas `feat/`, `fix/`, `chore/`, `docs/`. PR pequeño, revisión y CI verde (el agente entrega el mensaje-PR con descripción del hito; el humano crea la PR, revisa y mergea; el agente espera aprobación entre hitos). Detalle en [development-protocol.md](./development-protocol.md).
 
 ```text
 main ──●────●────●────●── producción

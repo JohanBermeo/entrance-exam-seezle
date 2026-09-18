@@ -7,13 +7,13 @@ Documento versionado para humanos y agentes de IA. Complementa [backend-calculat
 | Responsabilidad | Humano (Johan) | Agente de IA |
 | --- | --- | --- |
 | Aprobar cierre de un hito | Sí | No |
-| Abrir PR hacia `main` con descripción del hito | No | **Sí**, al cerrar el hito (ver paso 6) |
+| Entregar mensaje-PR del hito (título + descripción lista para pegar) | No | **Sí**, al cerrar el hito (ver paso 6) |
 | Revisar, aprobar y hacer merge del PR | Sí | **No** |
 | Crear rama, implementar, commits locales | Puede | Sí (cuando se pida) |
 | Ejecutar pruebas / verificación técnica | Puede | Sí, antes de dar el hito por implementado |
 | Actualizar README del frente tocado | Puede | Sí, al cerrar el hito (ver paso 5) |
 
-El agente **debe** abrir la PR del hito (p. ej. con `gh pr create`) con una descripción adecuada de lo realizado, y **no** debe mergear ramas ni hacer merge de la PR salvo que el humano lo pida **explícitamente** en ese momento.
+El agente **debe** publicar la rama (`git push`) y entregar el **mensaje-PR** del hito: título sugerido + descripción adecuada de lo realizado (qué incluye, cómo verificar, qué cambió en el contrato si aplica) + enlace directo de creación (`.../pull/new/<rama>`). La PR la crea el humano; el agente **no** debe crearla (ni con `gh`) ni mergear salvo que el humano lo pida **explícitamente** en ese momento.
 
 ## Flujo de trabajo
 
@@ -25,14 +25,14 @@ El agente **debe** abrir la PR del hito (p. ej. con `gh pr create`) con una desc
    - Backend → [backend/README.md](../backend/README.md) (cómo ejecutar, endpoints nuevos, variables, verificación).
    - Frontend → [frontend/front-calculator/README.md](../frontend/front-calculator/README.md) (scripts, integración con API, flujo de uso).
    Si el hito toca ambos frentes, actualizar ambos. Cambios solo de documentación global pueden ir en el [README raíz](../README.md).
-6. **Entrega del hito (agente):** resumir qué quedó hecho, cómo verificarlo, qué README se actualizó y en qué rama está el trabajo; **abrir la PR hacia `main` con una descripción adecuada de lo realizado** (qué incluye, cómo verificar, qué cambió en el contrato si aplica); **detenerse y esperar sin mergear**.
+6. **Entrega del hito (agente):** resumir qué quedó hecho, cómo verificarlo, qué README se actualizó y en qué rama está el trabajo; **entregar el mensaje-PR** (título + cuerpo listos para pegar y enlace de creación de la PR hacia `main`); **detenerse y esperar sin mergear**.
 7. **Aprobación del hito (humano):** cuando el humano da por aprobado el hito, revisa la PR, decide cuándo mergea y si continúa al siguiente hito.
 8. **Siguiente hito:** el agente **solo** inicia el hito siguiente tras **confirmación explícita** del humano (p. ej. “aprobado, sigue con el hito 03”). Sin esa confirmación, no avanzar de hito aunque el código esté listo.
 
 ## Trunk-based development
 
 - `main` permanece integrable y protegido.
-- Ramas cortas que nacen de `main` y vuelven con PR pequeño (la PR la abre el agente; revisión y merge los gestiona el humano).
+- Ramas cortas que nacen de `main` y vuelven con PR pequeño (el agente entrega el mensaje-PR; el humano crea la PR, revisa y mergea).
 - Etiquetas semánticas desde `main`. Usar `release/x.y` solo si hace falta estabilizar una versión mientras sigue el desarrollo en paralelo.
 
 ## Ejemplos de ramas

@@ -15,8 +15,8 @@ When the plan and existing code disagree, **do not silently drift**: align with 
 ## Workflow rules (mandatory)
 
 - **One milestone at a time.** Do not start the next milestone until the user **explicitly confirms** the current one is approved and asks to continue.
-- **PR por hito (agente):** al cerrar el hito, abrir la PR hacia `main` con una descripción adecuada de lo realizado; **no mergear** salvo petición explícita del humano en esa conversación.
-- **End of milestone:** run verification; update the matching README (`backend/README.md` or `frontend/front-calculator/README.md`, or both if applicable); open the PR with a proper description, give a short summary and branch name, then **stop and wait** for user approval before any new scope.
+- **Mensaje-PR por hito (agente):** al cerrar el hito, publicar la rama y entregar título + descripción lista para pegar (enlace `pull/new/<rama>`); **no crear la PR ni mergear** salvo petición explícita del humano en esa conversación.
+- **End of milestone:** run verification; update the matching README (`backend/README.md` or `frontend/front-calculator/README.md`, or both if applicable); deliver the PR message (paste-ready title + body + creation link), give a short summary and branch name, then **stop and wait** for user approval before any new scope.
 
 Full detail: [docs/development-protocol.md](docs/development-protocol.md).
 
