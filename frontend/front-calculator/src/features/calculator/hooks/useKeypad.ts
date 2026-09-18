@@ -6,28 +6,40 @@ const DIRECT_KEYS = new Set('0123456789+-*/().^%'.split(''))
 export interface UseKeypadOptions {
   initialExpression?: string
   onEquals?: (expression: string) => void
+  /** Se invoca en cada edición (virtual o física), no en submit. */
+  onEdit?: () => void
 }
 
 /** Construye la expresión desde el keypad virtual y el teclado físico. */
 export function useKeypad(options: UseKeypadOptions = {}) {
-  const { initialExpression = '', onEquals } = options
+  const { initialExpression = '', onEquals, onEdit } = options
   const [expression, setExpression] = useState(initialExpression)
   const onEqualsRef = useRef(onEquals)
   useEffect(() => {
     onEqualsRef.current = onEquals
   }, [onEquals])
+  const onEditRef = useRef(onEdit)
+  useEffect(() => {
+    onEditRef.current = onEdit
+  }, [onEdit])
 
   const input = useCallback((symbol: string) => {
+    onEditRef.current?.()
     setExpression((prev) => prev + symbol)
   }, [])
 
-  const clear = useCallback(() => setExpression(''), [])
+  const clear = useCallback(() => {
+    onEditRef.current?.()
+    setExpression('')
+  }, [])
 
   const backspace = useCallback(() => {
+    onEditRef.current?.()
     setExpression((prev) => prev.slice(0, -1))
   }, [])
 
   const toggleSign = useCallback(() => {
+    onEditRef.current?.()
     setExpression((prev) => toggleLastNumberSign(prev))
   }, [])
 
