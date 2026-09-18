@@ -37,7 +37,7 @@ func NewRouterWithOptions(logger *slog.Logger, options application.Options, time
 	recorder := metrics.NewRecorder()
 	mux.Handle("GET /metrics", recorder.Handler())
 
-	return requestID(recoverPanic(logger, logRequests(logger, recorder.Track(mux))))
+	return cors(requestID(recoverPanic(logger, logRequests(logger, recorder.Track(mux)))))
 }
 
 func healthHandler(w http.ResponseWriter, _ *http.Request) {

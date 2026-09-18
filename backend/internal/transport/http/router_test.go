@@ -41,3 +41,37 @@ func TestHealthEndpoints(t *testing.T) {
 		})
 	}
 }
+
+func TestCORSHeaders(t *testing.T) {
+	router := NewRouter(slog.New(slog.NewTextHandler(io.Discard, nil)))
+
+	t.Run("preflight options request", func(t *testing.T) {
+		request := httptest.NewRequest(http.MethodOptions, "/v1/calculations", nil)
+		request.Header.Set("Origin", "http://localhost:3000")
+		request.Header.Set("Access-Control-Request-Method", "POST")
+		response := httptest.NewRecorder()
+
+		router.ServeHTTP(response, request)
+
+		if response.Code != http.StatusNoContent {
+			t.Fatalf("status = %d, want %d", response.Code, http.StatusNoContent)
+		}
+		if response.Header().Get("Access-Control-Allow-Origin") != "*" {
+			t.Fatalf("Access-Control-Allow-Origin = %q, want '*'", response.Header().Get("Access-Control-Allow-Origin"))
+		}
+	})
+
+	t.Run("post request cors headers", func(t *testing.T) {
+		request := httptest.NewRequest(http.MethodPost, "/v1/calculations", strings.NewReader(`{"expression":"1+1"}`))
+		request.Header.Set("Origin", "http://localhost:3000")
+		request.Header.Set("Content-Type", "application/json")
+		response := httptest.NewRecorder()
+
+		router.ServeHTTP(response, request)
+
+		if response.Header().Get("Access-Control-Allow-Origin") != "*" {
+			t.Fatalf("Access-Control-Allow-Origin = %q, want '*'", response.Header().Get("Access-Control-Allow-Origin"))
+		}
+	})
+}
+
