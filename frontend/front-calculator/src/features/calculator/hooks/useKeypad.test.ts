@@ -17,6 +17,12 @@ describe('useKeypad', () => {
     expect(result.current.expression).toBe('')
   })
 
+  it('inserta × explícito al abrir función tras dígito', () => {
+    const { result } = renderHook(() => useKeypad({ initialExpression: '9' }))
+    act(() => result.current.input('sqrt('))
+    expect(result.current.expression).toBe('9*sqrt(')
+  })
+
   it('toggleSign niega el último número', () => {
     const { result } = renderHook(() => useKeypad({ initialExpression: '5+3' }))
     act(() => result.current.toggleSign())

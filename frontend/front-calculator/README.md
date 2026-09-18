@@ -88,7 +88,7 @@ AC  +/-  (   ) | √  xʸ  ⌫  % | 7 8 9 ÷ | 4 5 6 × | 1 2 3 − | 0  .  =  +
 
 ## Flujo de uso
 
-1. Construir expresión con keypad o teclado físico (`useKeypad`).
+1. Construir expresión con keypad o teclado físico (`useKeypad`). Ante `sqrt(`, `percent(` o `(` tras dígito o `)` se inserta `×` explícito (la gramática no acepta multiplicación implícita).
 2. Validación cliente liviana (caracteres, paréntesis, funciones `sqrt`/`percent`).
 3. Pulsar `=` → `POST /v1/calculations` → resultado en `Display` o `ErrorToast` (con `position` si el backend la devuelve).
 4. Historial en memoria: clic para reutilizar expresión.

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { toggleLastNumberSign } from '../utils/expression'
+import { appendSymbol, toggleLastNumberSign } from '../utils/expression'
 
 const DIRECT_KEYS = new Set('0123456789+-*/().^%'.split(''))
 
@@ -25,7 +25,7 @@ export function useKeypad(options: UseKeypadOptions = {}) {
 
   const input = useCallback((symbol: string) => {
     onEditRef.current?.()
-    setExpression((prev) => prev + symbol)
+    setExpression((prev) => appendSymbol(prev, symbol))
   }, [])
 
   const clear = useCallback(() => {
