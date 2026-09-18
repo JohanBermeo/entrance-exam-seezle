@@ -3,10 +3,22 @@ import { describe, expect, it, vi } from 'vitest'
 import { Keypad } from './Keypad'
 
 describe('Keypad', () => {
-  it('renderiza las 22 teclas + celda vacía', () => {
+  it('renderiza las 24 teclas sin celda vacía', () => {
     render(<Keypad onKeyPress={() => {}} />)
     const group = screen.getByRole('group', { name: 'Teclado' })
-    expect(within(group).getAllByRole('button')).toHaveLength(22)
+    expect(within(group).getAllByRole('button')).toHaveLength(24)
+  })
+
+  it('los paréntesis son tipo operación y notifican su valor', () => {
+    const onKeyPress = vi.fn()
+    render(<Keypad onKeyPress={onKeyPress} />)
+    const open = screen.getByRole('button', { name: '(' })
+    expect(open).toHaveClass('key-operation')
+    expect(open).not.toHaveClass('key-span-2')
+    fireEvent.click(open)
+    expect(onKeyPress).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'open-paren', value: '(' }),
+    )
   })
 
   it('notifica la tecla pulsada con su def', () => {

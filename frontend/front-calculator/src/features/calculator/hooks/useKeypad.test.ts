@@ -17,10 +17,44 @@ describe('useKeypad', () => {
     expect(result.current.expression).toBe('')
   })
 
-  it('toggleSign niega el último número', () => {
+  it('inserta × explícito al abrir función tras dígito', () => {
+    const { result } = renderHook(() => useKeypad({ initialExpression: '9' }))
+    act(() => result.current.input('sqrt('))
+    expect(result.current.expression).toBe('9*sqrt(')
+  })
+
+  it('toggleSign envuelve el último número con paréntesis', () => {
     const { result } = renderHook(() => useKeypad({ initialExpression: '5+3' }))
     act(() => result.current.toggleSign())
-    expect(result.current.expression).toBe('5+-3')
+    expect(result.current.expression).toBe('5+(-3)')
+    act(() => result.current.toggleSign())
+    expect(result.current.expression).toBe('5+3')
+  })
+
+  it('tras commitResult el número/paréntesis/punto borran y la operación encadena', () => {
+    const { result } = renderHook(() => useKeypad())
+    act(() => result.current.commitResult(8))
+    expect(result.current.expression).toBe('8')
+    act(() => result.current.input('5'))
+    expect(result.current.expression).toBe('5')
+    act(() => result.current.commitResult(8))
+    act(() => result.current.input('+'))
+    expect(result.current.expression).toBe('8+')
+    act(() => result.current.commitResult(8))
+    act(() => result.current.input('('))
+    expect(result.current.expression).toBe('(')
+    act(() => result.current.commitResult(8))
+    act(() => result.current.input('.'))
+    expect(result.current.expression).toBe('.')
+  })
+
+  it('editar invalida el borrado fresco', () => {
+    const { result } = renderHook(() => useKeypad())
+    act(() => result.current.commitResult(8))
+    act(() => result.current.backspace())
+    act(() => result.current.input('8'))
+    act(() => result.current.input('5'))
+    expect(result.current.expression).toBe('85')
   })
 
   it('submit llama a onEquals con la expresión actual', () => {

@@ -17,26 +17,26 @@ Keypad / teclado físico → expression string → validación cliente (liviana)
 
 ## Alcance v1 (decisiones acordadas)
 
-| Aspecto | Decisión |
-| --- | --- |
-| Modo API | Solo `expression` (sin builder visual de DAG en v1) |
-| Comunicación | `fetch` nativo + `useState` + `AbortController` (sin React Query / Zustand) |
-| Componentización | Por feature: `Display`, `Keypad`, `Key`, `HistoryPanel`, `ErrorToast` bajo `features/calculator/` |
-| Historial | Solo memoria (máx. 20), **sin** `localStorage` en v1 |
-| Fuente | `JetBrains Mono` vía CDN (Google Fonts `@import`) |
-| Formato numérico | Locale `es-ES` (`1.234,56`; notación científica para magnitudes grandes) |
-| Keypad | Grid 4 cols × 6 filas; `=` solo en fila 5; fila 6: `0` (span 2) + `.` + celda vacía |
-| Sin cuentas, sin persistencia, sin DB | Igual que backend v1 |
+| Aspecto                               | Decisión                                                                                                                                            |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Modo API                              | Solo`expression` (sin builder visual de DAG en v1)                                                                                                 |
+| Comunicación                         | `fetch` nativo + `useState` + `AbortController` (sin React Query / Zustand)                                                                    |
+| Componentización                     | Por feature:`Display`, `Keypad`, `Key`, `HistoryPanel`, `ErrorToast` bajo `features/calculator/`                                         |
+| Historial                             | Solo memoria (máx. 20),**sin** `localStorage` en v1                                                                                         |
+| Fuente                                | `JetBrains Mono` vía CDN (Google Fonts `@import`)                                                                                               |
+| Formato numérico                     | Locale`es-ES` (`1.234,56`; notación científica para magnitudes grandes)                                                                        |
+| Keypad                                | Grid 4 cols × 6 filas; fila 1: `AC`,`+/-`,`(`,`)`; fila 2: `√`,`xʸ`,`⌫`,`%`; filas 3–5: dígitos con `/`,`×`,`−`; fila 6: `0`,`.`,`=`,`+` (sin celdas vacías ni spans) |
+| Sin cuentas, sin persistencia, sin DB | Igual que backend v1                                                                                                                                 |
 
 ### Orden del keypad (definitivo)
 
 ```text
-Row 1:  AC      +/-      %       ÷  (/)
-Row 2:  √     xʸ       ⌫(del)   ×  (*)
-Row 3:  7       8        9       −
-Row 4:  4       5        6       +
-Row 5:  1       2        3       =
-Row 6:  0 (span 2)       .      [vacío]
+Row 1:  AC      +/-     (       )
+Row 2:  √      xʸ      ⌫(del)   %
+Row 3:  7       8       9       ÷  (/)
+Row 4:  4       5       6       ×  (*)
+Row 5:  1       2       3       −
+Row 6:  0       .       =       +
 ```
 
 Mapeo a expresión backend: `÷→/`, `×→*`, `−→-`, `√→sqrt(`, `xʸ→^`, `%→percent(,)` según helper (ver `expressionHelpers`).
@@ -77,33 +77,33 @@ Mapeo HTTP: `400→validation`, `422→domain`, `408/499→timeout`, fallo de re
 
 Paleta derivada del icono provisto (`DeleteIcon`, `#833AED`) + blanco.
 
-| Token | Valor |
-| --- | --- |
-| `accent` (símbolos operación/función) | `#833AED` |
-| `accentLight` (fondo botones operación/función) | `rgba(131, 58, 237, 0.12)` + borde `rgba(131, 58, 237, 0.2)` |
-| `accentDark` (fondo `=`) | `#6B21A8`, hover `#581C87`, texto `#FFF` |
-| `number bg / fg` | `#FFF` / `#1A1A1A` |
-| `module bg / page bg` | `#FFFFFF` |
-| `shadow module` | `0 20px 40px -10px rgba(131,58,237,0.15), 0 8px 16px -4px rgba(131,58,237,0.1)` |
-| `radius btn / display / module` | `12px` / `16px` / `20px` |
-| `display` | `JetBrains Mono 48px` (36px móvil), altura `100px`, alineado derecha |
-| `key` | `JetBrains Mono 600 20px` (16px funciones), `64px` (56px móvil), gap `8px` |
-| `module` | Centrado, `max-width 360px`, padding `24px` |
-| `breakpoints` | `480px` móvil / `768px` tablet / `1024px` desktop |
+| Token                                               | Valor                                                                             |
+| --------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `accent` (símbolos operación/función)          | `#833AED`                                                                       |
+| `accentLight` (fondo botones operación/función) | `rgba(131, 58, 237, 0.12)` + borde `rgba(131, 58, 237, 0.2)`                  |
+| `accentDark` (fondo `=`)                        | `#6B21A8`, hover `#581C87`, texto `#FFF`                                    |
+| `number bg / fg`                                  | `#FFF` / `#1A1A1A`                                                            |
+| `module bg / page bg`                             | `#FFFFFF`                                                                       |
+| `shadow module`                                   | `0 20px 40px -10px rgba(131,58,237,0.15), 0 8px 16px -4px rgba(131,58,237,0.1)` |
+| `radius btn / display / module`                   | `12px` / `16px` / `20px`                                                    |
+| `display`                                         | `JetBrains Mono 48px` (36px móvil), altura `100px`, alineado derecha         |
+| `key`                                             | `JetBrains Mono 600 20px` (16px funciones), `64px` (56px móvil), gap `8px` |
+| `module`                                          | Centrado,`max-width 360px`, padding `24px`                                    |
+| `breakpoints`                                     | `480px` móvil / `768px` tablet / `1024px` desktop                          |
 
 Implementación: custom properties en `src/index.css` + `shared/constants/designTokens.ts` tipado. Ver detalle en `frontend/front-calculator/README.md`.
 
 ## Arquitectura por capas
 
-| Capa | Responsabilidad |
-| --- | --- |
-| `features/calculator/api` | Wrapper `fetch` (`calculationApi.ts`), tipos (`types.ts`). Único lugar que conoce la URL y el mapeo de errores HTTP |
-| `features/calculator/hooks` | `useCalculation` (fetch + loading/error/result/historial + abort), `useExpressionValidation` (regex cliente liviana), `useKeypad` (teclado físico + virtual → string), `useHistory` (memoria, máx. 20) |
-| `features/calculator/components` | Presentacionales: `CalculatorLayout`, `Display`, `Keypad`, `Key`, `HistoryPanel`, `ErrorToast` |
-| `features/calculator/utils` | `keypadLayout.ts` (definición del grid), `expressionHelpers.ts` (símbolos UI → sintaxis backend), `formatResult.ts` (locale ES) |
-| `components/` | Base reutilizable: `Button`, `Card`, `Icon`, `Toast` (variantes por props, sin lógica de negocio) |
-| `shared/utils` + `shared/constants` | `cn`, `formatNumber`, `designTokens.ts` |
-| `assets/icons` | Solo el icono provisto como componente React: `DeleteIcon` (convertido 1:1 de `DeletIcon.svg`, con `currentColor`). Las teclas de función (`√`, `xʸ`, `+/-`, `%`) usan etiqueta de texto, no se crean iconos nuevos en v1 |
+| Capa                                    | Responsabilidad                                                                                                                                                                                                                           |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `features/calculator/api`             | Wrapper`fetch` (`calculationApi.ts`), tipos (`types.ts`). Único lugar que conoce la URL y el mapeo de errores HTTP                                                                                                                 |
+| `features/calculator/hooks`           | `useCalculation` (fetch + loading/error/result/historial + abort), `useExpressionValidation` (regex cliente liviana), `useKeypad` (teclado físico + virtual → string), `useHistory` (memoria, máx. 20)                         |
+| `features/calculator/components`      | Presentacionales:`CalculatorLayout`, `Display`, `Keypad`, `Key`, `HistoryPanel`, `ErrorToast`                                                                                                                                 |
+| `features/calculator/utils`           | `keypadLayout.ts` (definición del grid), `expressionHelpers.ts` (símbolos UI → sintaxis backend), `formatResult.ts` (locale ES)                                                                                                  |
+| `components/`                         | Base reutilizable:`Button`, `Card`, `Icon`, `Toast` (variantes por props, sin lógica de negocio)                                                                                                                                 |
+| `shared/utils` + `shared/constants` | `cn`, `formatNumber`, `designTokens.ts`                                                                                                                                                                                             |
+| `assets/icons`                        | Solo el icono provisto como componente React:`DeleteIcon` (convertido 1:1 de `DeletIcon.svg`, con `currentColor`). Las teclas de función (`√`, `xʸ`, `+/-`, `%`) usan etiqueta de texto, no se crean iconos nuevos en v1 |
 
 Principio: añadir una tecla o un icono no obliga a tocar la capa API ni los hooks.
 
@@ -151,13 +151,13 @@ frontend/front-calculator/
 
 ## Plan por fases
 
-| Fase | Contenido | Rama sugerida |
-| --- | --- | --- |
-| **F1 · Fundaciones** | Estructura, migración a TypeScript (`tsconfig`, `typecheck`, types en props), `designTokens.ts`, `index.css` (tokens + JetBrains Mono CDN), `components/` base, `DeleteIcon` como componente | `feat/frontend-foundations` |
-| **F2 · API + hooks** | `calculationApi`, `types`, 4 hooks + tests (Vitest + MSW) | `feat/frontend-api-hooks` |
-| **F3 · Componentes feature** | `Display`, `Key`, `Keypad` (grid 4×6), `CalculatorLayout`, `HistoryPanel`, `ErrorToast` | `feat/frontend-calculator-ui` |
-| **F4 · Integración + polish** | `App.tsx` wiring, responsive, errores 400/422, copy, loading, historial memoria | `feat/frontend-integration` |
-| **F5 · Calidad** | README, lint/typecheck/tests/build, PR | `chore/frontend-quality` |
+| Fase                                  | Contenido                                                                                                                                                                                                 | Rama sugerida                   |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| **F1 · Fundaciones**           | Estructura, migración a TypeScript (`tsconfig`, `typecheck`, types en props), `designTokens.ts`, `index.css` (tokens + JetBrains Mono CDN), `components/` base, `DeleteIcon` como componente | `feat/frontend-foundations`   |
+| **F2 · API + hooks**           | `calculationApi`, `types`, 4 hooks + tests (Vitest + MSW)                                                                                                                                             | `feat/frontend-api-hooks`     |
+| **F3 · Componentes feature**   | `Display`, `Key`, `Keypad` (grid 4×6), `CalculatorLayout`, `HistoryPanel`, `ErrorToast`                                                                                                      | `feat/frontend-calculator-ui` |
+| **F4 · Integración + polish** | `App.tsx` wiring, responsive, errores 400/422, copy, loading, historial memoria                                                                                                                         | `feat/frontend-integration`   |
+| **F5 · Calidad**               | README, lint/typecheck/tests/build, PR                                                                                                                                                                    | `chore/frontend-quality`      |
 
 ## Mantenimiento de este documento
 

@@ -29,12 +29,38 @@ function pressKeys(...names: string[]) {
 }
 
 describe('App', () => {
-  it('calcula 5 + 3 = 8 de punta a punta', async () => {
+  it('calcula 5 + 3 = 8 y vacía el renglón de operación', async () => {
     render(<App />)
     pressKeys('5', '+', '3', '=')
-    expect(await screen.findByText('8')).toBeInTheDocument()
-    expect(screen.getByText('5+3', { selector: '.display-expression' })).toBeInTheDocument()
+    expect(await screen.findByText('8', { selector: '.display-value' })).toBeInTheDocument()
+    expect(screen.queryByText('5+3', { selector: '.display-expression' })).toBeNull()
     expect(screen.getByText(/req-1/)).toBeInTheDocument()
+  })
+
+  it('encadena operaciones desde el resultado', async () => {
+    const seen: string[] = []
+    const values = [8, 10]
+    server.use(
+      http.post(URL, async ({ request }) => {
+        const body = (await request.json()) as { expression: string }
+        seen.push(body.expression)
+        return HttpResponse.json(okBody(values[seen.length - 1] ?? 10))
+      }),
+    )
+    render(<App />)
+    pressKeys('5', '+', '3', '=')
+    expect(await screen.findByText('8', { selector: '.display-value' })).toBeInTheDocument()
+    pressKeys('+', '2', '=')
+    expect(await screen.findByText('10', { selector: '.display-value' })).toBeInTheDocument()
+    expect(seen).toEqual(['5+3', '8+2'])
+  })
+
+  it('un número tras = empieza de cero', async () => {
+    render(<App />)
+    pressKeys('5', '+', '3', '=')
+    expect(await screen.findByText('8', { selector: '.display-value' })).toBeInTheDocument()
+    pressKeys('9')
+    expect(screen.getByText('9', { selector: '.display-expression' })).toBeInTheDocument()
   })
 
   it('muestra el error de dominio del backend', async () => {

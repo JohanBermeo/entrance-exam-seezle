@@ -9,6 +9,13 @@ describe('Display', () => {
     expect(screen.getByText('1234,56')).toBeInTheDocument()
   })
 
+  it('vacía el renglón de operación cuando duplica al resultado', () => {
+    render(<Display expression="8" result={8} />)
+    expect(screen.getByText('8', { selector: '.display-value' })).toBeInTheDocument()
+    const row = document.querySelector('.display-expression')
+    expect(row?.textContent).toBe(' ')
+  })
+
   it('muestra 0 cuando no hay resultado', () => {
     render(<Display expression="" result={null} />)
     expect(screen.getByText('0')).toBeInTheDocument()
