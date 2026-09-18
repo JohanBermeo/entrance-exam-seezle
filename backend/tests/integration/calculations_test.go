@@ -52,11 +52,11 @@ func TestIntegrationValidDAG(t *testing.T) {
 		t.Fatalf("status = %d, want 200 (body: %s)", resp.Code, resp.Body.String())
 	}
 	var payload struct {
-		RequestID    string             `json:"requestId"`
+		RequestID    string                     `json:"requestId"`
 		Results      map[string]json.RawMessage `json:"results"`
-		Outputs      []string           `json:"outputs"`
-		OutputValues []float64          `json:"outputValues"`
-		DurationMs   int64              `json:"durationMs"`
+		Outputs      []string                   `json:"outputs"`
+		OutputValues []float64                  `json:"outputValues"`
+		DurationMs   int64                      `json:"durationMs"`
 	}
 	if err := json.Unmarshal(resp.Body.Bytes(), &payload); err != nil {
 		t.Fatalf("contract decode error: %v", err)
@@ -186,7 +186,7 @@ func TestIntegrationMetricsReflectTraffic(t *testing.T) {
 	}
 	var payload struct {
 		Routes map[string]struct {
-			Count    int64          `json:"count"`
+			Count    int64            `json:"count"`
 			ByStatus map[string]int64 `json:"byStatus"`
 		} `json:"routes"`
 		InFlight int64 `json:"inFlight"`

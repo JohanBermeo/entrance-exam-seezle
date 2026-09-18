@@ -58,9 +58,9 @@ func (r *Recorder) observe(route string, status int, duration time.Duration) {
 
 // RouteMetrics is the JSON view of one route's stats.
 type RouteMetrics struct {
-	Count         int64          `json:"count"`
+	Count         int64         `json:"count"`
 	ByStatus      map[int]int64 `json:"byStatus"`
-	AvgDurationMs float64        `json:"avgDurationMs"`
+	AvgDurationMs float64       `json:"avgDurationMs"`
 }
 
 // Snapshot is the JSON view served on GET /metrics.
