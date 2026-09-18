@@ -2,6 +2,15 @@
 
 Repository for the Seezle technical assessment: **Go calculator API** (DAG execution) + **React** frontend.
 
+## Run everything (Docker)
+
+```powershell
+./run.ps1            # backend :8080 + frontend :3000
+./run.ps1 -Action down
+```
+
+Options: `-Action up|down|restart|logs|build`, `-FrontendPort`, `-BackendPort`, `-ApiUrl`, `-SkipBuild` (reuse images). Requires Docker with a running daemon.
+
 ## Documentation
 
 - **[AGENTS.md](AGENTS.md)** — entry point for AI coding agents (OpenCode, Cursor, Copilot, etc.)
