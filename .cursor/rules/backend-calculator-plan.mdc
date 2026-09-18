@@ -1,0 +1,25 @@
+---
+description: Plan canónico del backend (calculadora REST, DAG, Go). Consultar el canvas predeterminado antes de diseñar o implementar en backend/.
+globs: backend/**
+alwaysApply: false
+---
+
+# Backend · canvas predeterminado
+
+El plan de arquitectura y alcance del backend está en el canvas:
+
+[backend-calculator-plan.canvas.tsx](file:///C:/Users/johan/.cursor/projects/c-Users-johan-OneDrive-Documentos-GitHub-entrance-exam-seezle/canvases/backend-calculator-plan.canvas.tsx)
+
+Antes de proponer estructura nueva, contratos HTTP, concurrencia o cambios de alcance en `backend/`, alinea el trabajo con ese documento. Si hay conflicto entre código existente y el canvas, pregunta o actualiza el canvas explícitamente; no desvíes el diseño en silencio.
+
+## Resumen ejecutivo (no sustituye el canvas)
+
+- **Entrada:** DAG de operaciones con IDs, referencias entre nodos y `outputs`; una sola llamada HTTP. Modo `expression` (Pratt parser) es evolución posterior al DAG explícito en v1.
+- **Operadores v1:** add, subtract, multiply, divide, power, square root, `percent(value, rate)` = value × rate / 100.
+- **Capas:** transporte delgado → `ExecuteCalculation` → dominio (operadores + registro) → scheduler DAG (fan-out/fan-in, pool acotado, un recolector).
+- **REST:** `POST /v1/calculations`, `GET /healthz`, `GET /readyz`; OpenAPI como contrato.
+- **Errores HTTP:** 400 validación JSON/tipos, 422 dominio (ciclo, refs, división por cero, etc.), 408/499 timeout/cancel, 500 con `requestId`.
+- **Numérico v1:** `float64` documentado; rechazar NaN, infinito, división por cero y raíz de negativos.
+- **Hitos:** fundaciones → dominio → DAG → concurrencia → calidad (OpenAPI, integración, race, métricas).
+
+Para detalle de carpetas, flujo, pruebas y git workflow, abre el canvas enlazado arriba.

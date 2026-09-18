@@ -1,0 +1,16 @@
+---
+description: Protocolo de desarrollo acordado (ramas, commits, PR y merge). Aplicar en todo el repo salvo indicación contraria.
+alwaysApply: true
+---
+
+# Protocolo de desarrollo
+
+1. **Rama:** crear una rama nueva desde `main` con prefijo acorde al trabajo: `feat/`, `fix/`, `chore/` o `docs/`.
+2. **Implementación:** seguir el plan aprobado (canvas backend-calculator-plan para `backend/`).
+3. **Commits:** commits pequeños, periódicos y descriptivos (trazabilidad).
+4. **Verificación:** ejecutar pruebas y comprobaciones necesarias antes de dar por cerrado un hito.
+5. **Revisión:** al terminar un bloque de trabajo, presentar el resultado y **esperar aprobación explícita** del usuario.
+6. **Pull request:** **solo** tras esa aprobación; la PR usa el **mismo nombre** que la rama.
+7. **Merge:** lo realiza el usuario; el agente **no** mergea a `main`.
+
+Complemento git (canvas): trunk en `main`, PR pequeños, CI verde, mensajes convencionales (`feat:`, `fix:`, `test:`, `docs:`).
