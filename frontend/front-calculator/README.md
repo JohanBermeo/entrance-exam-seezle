@@ -5,7 +5,7 @@ Plan canónico: [docs/frontend-calculator-plan.md](../../docs/frontend-calculato
 
 ## Requisitos
 
-- Node 20+, `pnpm` (o `npm`).
+- Node 20+, `pnpm` 10+ (CI usa pnpm 11 + Node 22).
 - Backend corriendo (por defecto `http://localhost:8080`).
 
 ## Variables de entorno
@@ -38,7 +38,7 @@ src/
 │   ├── api/         # calculationApi.ts (fetch), types.ts (request/response/error)
 │   ├── components/  # CalculatorLayout, Display, Keypad, Key, HistoryPanel, ErrorToast
 │   ├── hooks/       # useCalculation, useExpressionValidation, useKeypad, useHistory
-│   └── utils/       # keypadLayout, expressionHelpers, formatResult
+│   └── utils/       # keypadLayout, expression (toggleLastNumberSign)
 ├── components/    # Button, Card, Icon, Toast (base reutilizable)
 ├── shared/
 │   ├── utils/       # cn, formatNumber
@@ -75,6 +75,10 @@ AC  +/-  %   ÷ | √  xʸ  ⌫  × | 7 8 9 − | 4 5 6 + | 1 2 3 = | 0(span2) .
 3. Pulsar `=` → `POST /v1/calculations` → resultado en `Display` o `ErrorToast` (con `position` si el backend la devuelve).
 4. Historial en memoria: clic para reutilizar expresión.
 
+## CI
+
+`.github/workflows/frontend-ci.yml` corre en PR y push a `main` con cambios en `frontend/**`: `install --frozen-lockfile`, `lint`, `typecheck`, `test` y `build`.
+
 ## Verificación por fase
 
 | Fase | Verificar con |
@@ -91,4 +95,4 @@ AC  +/-  %   ÷ | √  xʸ  ⌫  × | 7 8 9 − | 4 5 6 + | 1 2 3 = | 0(span2) .
 - [x] **F2 API + hooks** (rama `feat/frontend-api-hooks`): `api/types` + `calculationApi` (mapeo 400/422/408-499/red/abort), hooks `useCalculation` (abort + historial memoria), `useExpressionValidation`, `useKeypad` (virtual + físico), `useHistory` (límite 20), `utils/expression` (`toggleLastNumberSign`), suite Vitest + MSW (34 tests). Verificado: `pnpm lint` ✅, `pnpm typecheck` ✅, `pnpm test` ✅, `pnpm build` ✅.
 - [x] **F3 Componentes feature** (rama `feat/frontend-calculator-ui`): `utils/keypadLayout` (grid 4×6 definitivo, `=` solo fila 5, `0` span 2 + celda vacía), `Key` (variantes + icono delete + span), `Keypad` (22 teclas, con `disabled` solo AC habilitado), `Display` (expresión + resultado es-ES + loading), `CalculatorLayout`, `HistoryPanel` (colapsable, reutilizar, limpiar), `ErrorToast` (mapeo `CalculationError`→Toast) + estilos en `index.css`. Suite: 58/58 tests. Verificado: `pnpm lint` ✅, `pnpm typecheck` ✅, `pnpm test` ✅, `pnpm build` ✅.
 - [x] **F4 Integración + polish** (rama `feat/frontend-integration`): `App.tsx` cablea keypad + validación cliente + `calculate` + historial (reutilizar/limpiar), `ErrorToast` (cliente 400-con-posición / servidor 422 / red), `Keypad` deshabilitado en carga (salvo AC), copiar resultado, meta `requestId · ms`, responsive 480px. Aditivo en hooks: `clearError` (`useCalculation`), `onEdit` (`useKeypad`). Test integración `App` con MSW (4 casos). E2E manual contra backend real: `sqrt(percent(200, 15)) + 4 ^ 2` → `21.477…`, `5/0` → `division_by_zero`, `1 +` → `invalid_input`. Suite: 63/63 tests. Verificado: `pnpm lint` ✅, `pnpm typecheck` ✅, `pnpm test` ✅, `pnpm build` ✅.
-- [ ] **F5 Calidad**
+- [x] **F5 Calidad** (rama `chore/frontend-quality`): CI con paso `pnpm test`, `index.html` (`lang="es"`, título `Calculadora`), `.env` ignorado, README final. Verificado: `pnpm lint` ✅, `pnpm typecheck` ✅, `pnpm test` ✅, `pnpm build` ✅.
