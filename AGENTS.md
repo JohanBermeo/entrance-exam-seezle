@@ -71,10 +71,11 @@ Frontend (from `frontend/front-calculator/`): follow that package’s README whe
 ```bash
 pnpm install
 pnpm lint
-pnpm build
+pnpm typecheck
+pnpm build   # = tsc --noEmit && vite build
 ```
 
-When TS/tests land: `pnpm typecheck`, `pnpm test`.
+When tests land (F2): `pnpm test`.
 
 ## Scope guardrails for v1
 
