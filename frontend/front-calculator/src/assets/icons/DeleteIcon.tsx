@@ -1,4 +1,11 @@
-export function DeleteIcon({ size = 24, className }) {
+export interface SvgIconProps {
+  size?: number
+  className?: string
+}
+
+/** Convertido 1:1 del asset provisto `src/assets/DeletIcon.svg` (rutas idénticas).
+ *  Usa `currentColor` en vez del color hardcodeado para heredar el acento por CSS. */
+export function DeleteIcon({ size = 24, className }: SvgIconProps) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

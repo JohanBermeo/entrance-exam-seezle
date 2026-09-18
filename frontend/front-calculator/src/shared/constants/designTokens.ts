@@ -1,9 +1,8 @@
 /**
- * Design tokens v1 — fuente JS de los tokens acordados en
+ * Design tokens v1 — fuente TS de los tokens acordados en
  * docs/frontend-calculator-plan.md. El CSS en `src/index.css`
  * es la representación efectiva; este módulo existe para que
- * componentes/utils puedan importar valores (p. ej. límites,
- * tamaños) sin hardcodearlos.
+ * componentes/utils puedan importar valores sin hardcodearlos.
  */
 export const designTokens = {
   color: {
@@ -48,4 +47,4 @@ export const designTokens = {
     tablet: 768,
     desktop: 1024,
   },
-}
+} as const

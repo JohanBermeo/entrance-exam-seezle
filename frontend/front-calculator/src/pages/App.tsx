@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import { Button, Card, Icon, Toast } from '../shared/ui/index.js'
+import { Button, Card, Icon } from '../components/index'
+import type { IconName } from '../components/index'
+import { Toast } from '../components/index'
 import './App.css'
 
-const ICON_NAMES = ['delete', 'sqrt', 'power', 'plus-minus', 'percent']
+const ICON_NAMES: IconName[] = ['delete']
 
 /**
- * Shell visual de F1 · Fundaciones: verifica tokens, shared/ui e iconos.
+ * Shell visual de F1 · Fundaciones: verifica tokens, components e iconos.
  * El layout real de la calculadora (Display/Keypad) llega en F3.
  */
 function App() {
@@ -15,7 +17,7 @@ function App() {
     <main className="calc-module app-shell">
       <header className="app-header">
         <p className="app-kicker">Calculadora · F1 Fundaciones</p>
-        <h1 className="app-title">shared/ui + tokens</h1>
+        <h1 className="app-title">components + tokens</h1>
       </header>
 
       <Card className="app-preview">
@@ -47,7 +49,7 @@ function App() {
         <Toast
           tone="info"
           title="F1 lista para revisión visual"
-          message="Tokens, Button, Card, Icon, Toast y 5 iconos como componentes."
+          message="Tokens, Button, Card, Icon, Toast y el icono provisto como componente."
           onDismiss={() => setShowToast(false)}
         />
       ) : null}

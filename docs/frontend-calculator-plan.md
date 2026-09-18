@@ -75,7 +75,7 @@ Mapeo HTTP: `400→validation`, `422→domain`, `408/499→timeout`, fallo de re
 
 ## Tokens de diseño (acordados)
 
-Paleta derivada de `src/assets/DeletIcon.svg` (`#833AED`) + blanco.
+Paleta derivada del icono provisto (`DeleteIcon`, `#833AED`) + blanco.
 
 | Token | Valor |
 | --- | --- |
@@ -101,9 +101,9 @@ Implementación: custom properties en `src/index.css` + `shared/constants/design
 | `features/calculator/hooks` | `useCalculation` (fetch + loading/error/result/historial + abort), `useExpressionValidation` (regex cliente liviana), `useKeypad` (teclado físico + virtual → string), `useHistory` (memoria, máx. 20) |
 | `features/calculator/components` | Presentacionales: `CalculatorLayout`, `Display`, `Keypad`, `Key`, `HistoryPanel`, `ErrorToast` |
 | `features/calculator/utils` | `keypadLayout.ts` (definición del grid), `expressionHelpers.ts` (símbolos UI → sintaxis backend), `formatResult.ts` (locale ES) |
-| `shared/ui` | Base reutilizable: `Button`, `Card`, `Icon`, `Toast` (variantes por props, sin lógica de negocio) |
+| `components/` | Base reutilizable: `Button`, `Card`, `Icon`, `Toast` (variantes por props, sin lógica de negocio) |
 | `shared/utils` + `shared/constants` | `cn`, `formatNumber`, `designTokens.ts` |
-| `assets/icons` | SVGs como componentes React: `DeleteIcon` (existente), `SqrtIcon`, `PowerIcon`, `PlusMinusIcon`, `PercentIcon` |
+| `assets/icons` | Solo el icono provisto como componente React: `DeleteIcon` (convertido 1:1 de `DeletIcon.svg`, con `currentColor`). Las teclas de función (`√`, `xʸ`, `+/-`, `%`) usan etiqueta de texto, no se crean iconos nuevos en v1 |
 
 Principio: añadir una tecla o un icono no obliga a tocar la capa API ni los hooks.
 
@@ -119,12 +119,12 @@ frontend/front-calculator/
 │   │   ├── hooks/{useCalculation,useExpressionValidation,useKeypad,useHistory}.ts
 │   │   ├── utils/{keypadLayout,expressionHelpers,formatResult}.ts
 │   │   └── index.ts
+│   ├── components/{Button,Card,Icon,Toast}.tsx
 │   ├── shared/
-│   │   ├── ui/{Button,Card,Icon,Toast}.tsx
 │   │   ├── utils/{cn,formatNumber}.ts
 │   │   └── constants/designTokens.ts
-│   ├── assets/icons/{DeleteIcon,SqrtIcon,PowerIcon,PlusMinusIcon,PercentIcon}.tsx
-│   ├── App.tsx
+│   ├── assets/icons/DeleteIcon.tsx   # único icono; resto de teclas con etiqueta de texto
+│   ├── pages/App.tsx
 │   ├── main.tsx
 │   └── index.css
 ├── .env                        # VITE_API_BASE_URL=http://localhost:8080
@@ -153,7 +153,7 @@ frontend/front-calculator/
 
 | Fase | Contenido | Rama sugerida |
 | --- | --- | --- |
-| **F1 · Fundaciones** | Estructura, `designTokens.ts`, `index.css` (tokens + JetBrains Mono CDN), `shared/ui`, iconos como componentes | `feat/frontend-foundations` |
+| **F1 · Fundaciones** | Estructura, migración a TypeScript (`tsconfig`, `typecheck`, types en props), `designTokens.ts`, `index.css` (tokens + JetBrains Mono CDN), `components/` base, `DeleteIcon` como componente | `feat/frontend-foundations` |
 | **F2 · API + hooks** | `calculationApi`, `types`, 4 hooks + tests (Vitest + MSW) | `feat/frontend-api-hooks` |
 | **F3 · Componentes feature** | `Display`, `Key`, `Keypad` (grid 4×6), `CalculatorLayout`, `HistoryPanel`, `ErrorToast` | `feat/frontend-calculator-ui` |
 | **F4 · Integración + polish** | `App.tsx` wiring, responsive, errores 400/422, copy, loading, historial memoria | `feat/frontend-integration` |

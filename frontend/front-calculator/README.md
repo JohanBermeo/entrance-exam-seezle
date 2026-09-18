@@ -1,4 +1,4 @@
-# front-calculator · React + Vite
+# front-calculator · React + TypeScript + Vite
 
 UI de calculadora (modo **expresión**) que consume `POST /v1/calculations` del backend.
 Plan canónico: [docs/frontend-calculator-plan.md](../../docs/frontend-calculator-plan.md). Contrato backend: [docs/backend-calculator-plan.md](../../docs/backend-calculator-plan.md).
@@ -20,15 +20,15 @@ VITE_API_BASE_URL=http://localhost:8080
 ```bash
 pnpm install
 pnpm dev        # desarrollo (http://localhost:5173)
-pnpm build      # build producción
+pnpm build      # typecheck + build producción
 pnpm preview    # previsualizar build
 pnpm lint       # eslint
+pnpm typecheck  # tsc --noEmit
 ```
 
-Cuando se añada TypeScript/tests:
+Cuando se añadan tests (F2):
 
 ```bash
-pnpm typecheck  # tsc --noEmit
 pnpm test       # vitest run
 ```
 
@@ -41,12 +41,12 @@ src/
 │   ├── components/  # CalculatorLayout, Display, Keypad, Key, HistoryPanel, ErrorToast
 │   ├── hooks/       # useCalculation, useExpressionValidation, useKeypad, useHistory
 │   └── utils/       # keypadLayout, expressionHelpers, formatResult
+├── components/    # Button, Card, Icon, Toast (base reutilizable)
 ├── shared/
-│   ├── ui/          # Button, Card, Icon, Toast
 │   ├── utils/       # cn, formatNumber
 │   └── constants/   # designTokens.ts
-├── assets/icons/    # DeleteIcon (existente), SqrtIcon, PowerIcon, PlusMinusIcon, PercentIcon
-├── App.tsx / main.tsx / index.css
+├── assets/icons/    # DeleteIcon.tsx (único icono; teclas de función con texto)
+├── pages/App.tsx / main.tsx / index.css
 ```
 
 Reglas: componentes presentacionales + hooks con lógica; solo `api/` conoce la URL y el mapeo de errores HTTP.
@@ -81,7 +81,7 @@ AC  +/-  %   ÷ | √  xʸ  ⌫  × | 7 8 9 − | 4 5 6 + | 1 2 3 = | 0(span2) .
 
 | Fase | Verificar con |
 | --- | --- |
-| F1 Fundaciones | `pnpm lint`, `tsc --noEmit` (cuando aplique), `pnpm build`, check visual de `shared/ui` |
+| F1 Fundaciones | `pnpm lint`, `pnpm typecheck`, `pnpm build`, check visual de `components/` |
 | F2 API + hooks | `pnpm test` (Vitest + MSW: success, 400, 422, timeout, network) |
 | F3 Componentes | tests de `Key`/`Display`/`Keypad`, grid 4×6 responsive |
 | F4 Integración | E2E manual: `sqrt(percent(200, 15)) + 4 ^ 2` → `=` → resultado ES → copiar → historial |
@@ -89,7 +89,7 @@ AC  +/-  %   ÷ | √  xʸ  ⌫  × | 7 8 9 − | 4 5 6 + | 1 2 3 = | 0(span2) .
 
 ## Estado de implementación
 
-- [x] **F1 Fundaciones** (rama `feat/frontend-foundations`): tokens (`designTokens.js` + `index.css` con JetBrains Mono CDN), `shared/ui` (`Button`, `Card`, `Icon`, `Toast`), `shared/utils` (`cn`, `formatNumber` es-ES), 5 iconos como componentes React, shell visual en `pages/App.jsx`, fix del import en `main.jsx`. Verificado: `pnpm lint` ✅, `pnpm build` ✅.
+- [x] **F1 Fundaciones** (rama `feat/frontend-foundations`): stack React + TypeScript (`tsconfig`, `typecheck`, types en props), tokens (`designTokens.ts` + `index.css` con JetBrains Mono CDN), `components/` (`Button`, `Card`, `Icon`, `Toast`), `shared/utils` (`cn`, `formatNumber` es-ES), `DeleteIcon` como componente (único icono; teclas de función con texto), shell visual en `pages/App.tsx`, fix del import en `main.tsx`. Verificado: `pnpm lint` ✅, `pnpm typecheck` ✅, `pnpm build` ✅.
 - [ ] **F2 API + hooks**
 - [ ] **F3 Componentes feature**
 - [ ] **F4 Integración + polish**
