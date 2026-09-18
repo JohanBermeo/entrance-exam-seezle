@@ -26,10 +26,8 @@ pnpm lint       # eslint
 pnpm typecheck  # tsc --noEmit
 ```
 
-Cuando se añadan tests (F2):
-
 ```bash
-pnpm test       # vitest run
+pnpm test       # vitest run (jsdom + Testing Library + MSW)
 ```
 
 ## Arquitectura
@@ -90,7 +88,7 @@ AC  +/-  %   ÷ | √  xʸ  ⌫  × | 7 8 9 − | 4 5 6 + | 1 2 3 = | 0(span2) .
 ## Estado de implementación
 
 - [x] **F1 Fundaciones** (rama `feat/frontend-foundations`): stack React + TypeScript (`tsconfig`, `typecheck`, types en props), tokens (`designTokens.ts` + `index.css` con JetBrains Mono CDN), `components/` (`Button`, `Card`, `Icon`, `Toast`), `shared/utils` (`cn`, `formatNumber` es-ES), `DeleteIcon` como componente (único icono; teclas de función con texto), shell visual en `pages/App.tsx`, fix del import en `main.tsx`. Verificado: `pnpm lint` ✅, `pnpm typecheck` ✅, `pnpm build` ✅.
-- [ ] **F2 API + hooks**
+- [x] **F2 API + hooks** (rama `feat/frontend-api-hooks`): `api/types` + `calculationApi` (mapeo 400/422/408-499/red/abort), hooks `useCalculation` (abort + historial memoria), `useExpressionValidation`, `useKeypad` (virtual + físico), `useHistory` (límite 20), `utils/expression` (`toggleLastNumberSign`), suite Vitest + MSW (34 tests). Verificado: `pnpm lint` ✅, `pnpm typecheck` ✅, `pnpm test` ✅, `pnpm build` ✅.
 - [ ] **F3 Componentes feature**
 - [ ] **F4 Integración + polish**
 - [ ] **F5 Calidad**
