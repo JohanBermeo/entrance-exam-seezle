@@ -29,11 +29,11 @@ function pressKeys(...names: string[]) {
 }
 
 describe('App', () => {
-  it('calcula 5 + 3 = 8 y deja el resultado como expresión', async () => {
+  it('calcula 5 + 3 = 8 y vacía el renglón de operación', async () => {
     render(<App />)
     pressKeys('5', '+', '3', '=')
-    expect(await screen.findByText('8')).toBeInTheDocument()
-    expect(screen.getByText('8', { selector: '.display-expression' })).toBeInTheDocument()
+    expect(await screen.findByText('8', { selector: '.display-value' })).toBeInTheDocument()
+    expect(screen.queryByText('5+3', { selector: '.display-expression' })).toBeNull()
     expect(screen.getByText(/req-1/)).toBeInTheDocument()
   })
 
@@ -49,7 +49,7 @@ describe('App', () => {
     )
     render(<App />)
     pressKeys('5', '+', '3', '=')
-    expect(await screen.findByText('8', { selector: '.display-expression' })).toBeInTheDocument()
+    expect(await screen.findByText('8', { selector: '.display-value' })).toBeInTheDocument()
     pressKeys('+', '2', '=')
     expect(await screen.findByText('10', { selector: '.display-value' })).toBeInTheDocument()
     expect(seen).toEqual(['5+3', '8+2'])
