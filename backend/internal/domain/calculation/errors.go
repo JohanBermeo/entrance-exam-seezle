@@ -18,9 +18,9 @@ const (
 
 // DomainError describes an invalid mathematical operation without exposing transport details.
 type DomainError struct {
-	Code      ErrorCode
-	Operation string
-	Message   string
+	Code      ErrorCode `json:"code"`
+	Operation string    `json:"operation,omitempty"`
+	Message   string    `json:"message"`
 }
 
 func (error *DomainError) Error() string {

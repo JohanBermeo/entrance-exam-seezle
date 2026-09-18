@@ -9,6 +9,7 @@ import (
 	"back-calculator/internal/application"
 	"back-calculator/internal/domain/operators"
 	"back-calculator/internal/engine"
+	"back-calculator/internal/platform/metrics"
 )
 
 // NewRouter returns the public HTTP surface for the calculator API
@@ -33,7 +34,10 @@ func NewRouterWithOptions(logger *slog.Logger, options application.Options, time
 	calcHandler := NewCalculationHandlerWithOptions(logger, options, timeout, maxBody)
 	mux.Handle("POST /v1/calculations", calcHandler)
 
-	return requestID(recoverPanic(logger, logRequests(logger, mux)))
+	recorder := metrics.NewRecorder()
+	mux.Handle("GET /metrics", recorder.Handler())
+
+	return requestID(recoverPanic(logger, logRequests(logger, recorder.Track(mux))))
 }
 
 func healthHandler(w http.ResponseWriter, _ *http.Request) {
