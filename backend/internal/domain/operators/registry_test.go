@@ -43,22 +43,25 @@ func TestRegistryRejectsInvalidOperations(t *testing.T) {
 	registry := operators.NewRegistry()
 
 	testCases := []struct {
-		name   string
-		inputs []float64
-		code   calculation.ErrorCode
+		name     string
+		operator string
+		inputs   []float64
+		code     calculation.ErrorCode
 	}{
-		{name: "unknown", inputs: []float64{1}, code: calculation.CodeUnknownOperation},
-		{name: "add", inputs: []float64{1}, code: calculation.CodeInvalidArity},
-		{name: "divide", inputs: []float64{1, 0}, code: calculation.CodeDivisionByZero},
-		{name: "sqrt", inputs: []float64{-1}, code: calculation.CodeNegativeSquareRoot},
-		{name: "multiply", inputs: []float64{math.Inf(1), 2}, code: calculation.CodeNonFiniteNumber},
+		{name: "unknown_operation", operator: "unknown", inputs: []float64{1}, code: calculation.CodeUnknownOperation},
+		{name: "invalid_arity", operator: "add", inputs: []float64{1}, code: calculation.CodeInvalidArity},
+		{name: "division_by_zero", operator: "divide", inputs: []float64{1, 0}, code: calculation.CodeDivisionByZero},
+		{name: "negative_square_root", operator: "sqrt", inputs: []float64{-1}, code: calculation.CodeNegativeSquareRoot},
+		{name: "infinity_input", operator: "multiply", inputs: []float64{math.Inf(1), 2}, code: calculation.CodeInvalidInput},
+		{name: "nan_input", operator: "multiply", inputs: []float64{math.NaN(), 2}, code: calculation.CodeInvalidInput},
+		{name: "non_finite_number_result", operator: "power", inputs: []float64{0, -1}, code: calculation.CodeNonFiniteNumber},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			_, err := registry.Evaluate(testCase.name, testCase.inputs)
+			_, err := registry.Evaluate(testCase.operator, testCase.inputs)
 			if err == nil {
-				t.Fatalf("Evaluate(%q, %v) error = nil", testCase.name, testCase.inputs)
+				t.Fatalf("Evaluate(%q, %v) error = nil", testCase.operator, testCase.inputs)
 			}
 
 			var domainError *calculation.DomainError

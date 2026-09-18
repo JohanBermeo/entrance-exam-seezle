@@ -18,7 +18,7 @@ func validateInputs(operation string, inputs []float64, arity int) error {
 	}
 	for _, input := range inputs {
 		if math.IsNaN(input) || math.IsInf(input, 0) {
-			return calculation.NewDomainError(calculation.CodeNonFiniteNumber, operation, "inputs must be finite numbers")
+			return calculation.NewDomainError(calculation.CodeInvalidInput, operation, "inputs must be finite numbers")
 		}
 	}
 	return nil
