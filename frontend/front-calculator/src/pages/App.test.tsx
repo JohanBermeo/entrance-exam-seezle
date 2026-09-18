@@ -29,12 +29,30 @@ function pressKeys(...names: string[]) {
 }
 
 describe('App', () => {
-  it('calcula 5 + 3 = 8 de punta a punta', async () => {
+  it('calcula 5 + 3 = 8 y deja el resultado como expresión', async () => {
     render(<App />)
     pressKeys('5', '+', '3', '=')
     expect(await screen.findByText('8')).toBeInTheDocument()
-    expect(screen.getByText('5+3', { selector: '.display-expression' })).toBeInTheDocument()
+    expect(screen.getByText('8', { selector: '.display-expression' })).toBeInTheDocument()
     expect(screen.getByText(/req-1/)).toBeInTheDocument()
+  })
+
+  it('encadena operaciones desde el resultado', async () => {
+    const seen: string[] = []
+    const values = [8, 10]
+    server.use(
+      http.post(URL, async ({ request }) => {
+        const body = (await request.json()) as { expression: string }
+        seen.push(body.expression)
+        return HttpResponse.json(okBody(values[seen.length - 1] ?? 10))
+      }),
+    )
+    render(<App />)
+    pressKeys('5', '+', '3', '=')
+    expect(await screen.findByText('8', { selector: '.display-expression' })).toBeInTheDocument()
+    pressKeys('+', '2', '=')
+    expect(await screen.findByText('10', { selector: '.display-value' })).toBeInTheDocument()
+    expect(seen).toEqual(['5+3', '8+2'])
   })
 
   it('muestra el error de dominio del backend', async () => {

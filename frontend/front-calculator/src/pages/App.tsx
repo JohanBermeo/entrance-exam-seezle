@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   CalculatorLayout,
   Display,
@@ -37,6 +37,23 @@ function App() {
     setCopied(false)
   }, [])
 
+  // Ref puente: useKeypad necesita onEquals antes de que exista handleEquals,
+  // que a su vez necesita setExpression de useKeypad.
+  const handleEqualsRef = useRef<(expression: string) => Promise<void>>(async () => {})
+
+  const {
+    expression,
+    setExpression,
+    input,
+    clear,
+    backspace,
+    toggleSign,
+    submit,
+  } = useKeypad({
+    onEquals: (expr) => void handleEqualsRef.current(expr),
+    onEdit: markEdited,
+  })
+
   const handleEquals = useCallback(
     async (expression: string) => {
       markEdited()
@@ -50,20 +67,16 @@ function App() {
         return
       }
       setClientError(null)
-      await calculate(expression)
+      const value = await calculate(expression)
+      // Tras `=`, la expresión pasa a ser el resultado (encadenar operaciones).
+      if (value !== null && value !== undefined) setExpression(String(value))
     },
-    [validate, calculate, markEdited],
+    [validate, calculate, markEdited, setExpression],
   )
 
-  const {
-    expression,
-    setExpression,
-    input,
-    clear,
-    backspace,
-    toggleSign,
-    submit,
-  } = useKeypad({ onEquals: (expr) => void handleEquals(expr), onEdit: markEdited })
+  useEffect(() => {
+    handleEqualsRef.current = handleEquals
+  }, [handleEquals])
 
   const handleKeyPress = useCallback(
     (def: KeyDef) => {

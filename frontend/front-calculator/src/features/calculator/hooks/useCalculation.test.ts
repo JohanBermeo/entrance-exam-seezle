@@ -24,9 +24,11 @@ afterAll(() => server.close())
 describe('useCalculation', () => {
   it('calcula, guarda resultado e historial', async () => {
     const { result } = renderHook(() => useCalculation())
+    let value: number | null | undefined
     await act(async () => {
-      await result.current.calculate('5 + 3')
+      value = await result.current.calculate('5 + 3')
     })
+    expect(value).toBe(8)
     expect(result.current.isLoading).toBe(false)
     expect(result.current.error).toBeNull()
     expect(result.current.result?.results.result?.value).toBe(8)
@@ -45,9 +47,11 @@ describe('useCalculation', () => {
       ),
     )
     const { result } = renderHook(() => useCalculation())
+    let value: number | null | undefined
     await act(async () => {
-      await result.current.calculate('5 / 0')
+      value = await result.current.calculate('5 / 0')
     })
+    expect(value).toBeNull()
     expect(result.current.result).toBeNull()
     expect(result.current.error).toEqual({
       type: 'domain',
@@ -69,7 +73,7 @@ describe('useCalculation', () => {
       }),
     )
     const { result } = renderHook(() => useCalculation())
-    let pending: Promise<void> | undefined
+    let pending: Promise<number | null> | undefined
     act(() => {
       pending = result.current.calculate('1 + 1')
     })

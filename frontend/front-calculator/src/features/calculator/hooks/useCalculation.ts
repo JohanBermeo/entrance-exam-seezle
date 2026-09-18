@@ -9,7 +9,8 @@ export interface UseCalculationResult {
   error: CalculationError | null
   isLoading: boolean
   history: HistoryEntry[]
-  calculate: (expression: string) => Promise<void>
+  /** Calcula y devuelve el valor de la primera salida (`null` si falla o se aborta). */
+  calculate: (expression: string) => Promise<number | null>
   clearHistory: () => void
   clearError: () => void
 }
@@ -40,18 +41,17 @@ export function useCalculation(): UseCalculationResult {
       setError(null)
       try {
         const res = await calculateExpression(expression, { signal: controller.signal })
-        if (!mountedRef.current || controller.signal.aborted) return
+        if (!mountedRef.current || controller.signal.aborted) return null
         setResult(res)
         const firstOutput = res.outputs[0] ?? 'result'
-        push({
-          expression,
-          value: res.results[firstOutput]?.value ?? null,
-          requestId: res.requestId,
-        })
+        const value = res.results[firstOutput]?.value ?? null
+        push({ expression, value, requestId: res.requestId })
+        return value
       } catch (e) {
-        if (e instanceof DOMException && e.name === 'AbortError') return
-        if (!mountedRef.current) return
+        if (e instanceof DOMException && e.name === 'AbortError') return null
+        if (!mountedRef.current) return null
         setError(e as CalculationError)
+        return null
       } finally {
         if (mountedRef.current && abortRef.current === controller) setIsLoading(false)
       }
