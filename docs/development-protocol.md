@@ -21,10 +21,9 @@ El agente **debe** abrir la PR del hito (p. ej. con `gh pr create`) con una desc
 2. **Implementación:** seguir el plan aprobado en [backend-calculator-plan.md](./backend-calculator-plan.md), **solo el hito en curso**.
 3. **Commits:** commits pequeños, periódicos y descriptivos (trazabilidad). Preferir [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `test:`, `docs:`, `chore:`).
 4. **Verificación:** ejecutar pruebas y comprobaciones necesarias antes de considerar implementado el hito (p. ej. `go test ./...` en `backend/`).
-5. **README del frente:** actualizar el README correspondiente al área trabajada, en el mismo hito y antes de darlo por cerrado:
-   - Backend → [backend/README.md](../backend/README.md) (cómo ejecutar, endpoints nuevos, variables, verificación).
-   - Frontend → [frontend/front-calculator/README.md](../frontend/front-calculator/README.md) (scripts, integración con API, flujo de uso).
-   Si el hito toca ambos frentes, actualizar ambos. Cambios solo de documentación global pueden ir en el [README raíz](../README.md).
+5. **README:** actualizar la sección correspondiente del [README raíz](../README.md) en el mismo hito y antes de darlo por cerrado:
+   - Backend → sección Backend (cómo ejecutar, endpoints nuevos, variables, verificación).
+   - Frontend → sección Frontend (scripts, integración con API, flujo de uso).
 6. **Entrega del hito (agente):** resumir qué quedó hecho, cómo verificarlo, qué README se actualizó y en qué rama está el trabajo; **abrir la PR hacia `main` con una descripción adecuada de lo realizado** (qué incluye, cómo verificar, qué cambió en el contrato si aplica); **detenerse y esperar sin mergear**.
 7. **Aprobación del hito (humano):** cuando el humano da por aprobado el hito, revisa la PR, decide cuándo mergea y si continúa al siguiente hito.
 8. **Siguiente hito:** el agente **solo** inicia el hito siguiente tras **confirmación explícita** del humano (p. ej. “aprobado, sigue con el hito 03”). Sin esa confirmación, no avanzar de hito aunque el código esté listo.
