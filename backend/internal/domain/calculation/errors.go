@@ -7,6 +7,7 @@ type ErrorCode string
 
 const (
 	CodeUnknownOperation   ErrorCode = "unknown_operation"
+	CodeInvalidInput       ErrorCode = "invalid_input"
 	CodeInvalidArity       ErrorCode = "invalid_arity"
 	CodeDivisionByZero     ErrorCode = "division_by_zero"
 	CodeNegativeSquareRoot ErrorCode = "negative_square_root"
