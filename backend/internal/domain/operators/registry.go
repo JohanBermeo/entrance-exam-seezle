@@ -27,3 +27,12 @@ func (registry Registry) Evaluate(name string, inputs []float64) (float64, error
 	}
 	return operator.Evaluate(inputs)
 }
+
+// ArityMap returns a map of operator names to their arities.
+func (registry Registry) ArityMap() map[string]int {
+	result := make(map[string]int, len(registry.operators))
+	for name, op := range registry.operators {
+		result[name] = op.Arity()
+	}
+	return result
+}

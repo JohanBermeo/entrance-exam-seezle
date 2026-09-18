@@ -3,6 +3,7 @@ package operators
 type multiplication struct{}
 
 func (multiplication) Name() string { return "multiply" }
+func (multiplication) Arity() int   { return 2 }
 
 func (multiplication) Evaluate(inputs []float64) (float64, error) {
 	if err := validateInputs("multiply", inputs, 2); err != nil {

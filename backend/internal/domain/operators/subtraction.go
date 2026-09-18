@@ -3,6 +3,7 @@ package operators
 type subtraction struct{}
 
 func (subtraction) Name() string { return "subtract" }
+func (subtraction) Arity() int   { return 2 }
 
 func (subtraction) Evaluate(inputs []float64) (float64, error) {
 	if err := validateInputs("subtract", inputs, 2); err != nil {

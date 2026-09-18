@@ -12,6 +12,8 @@ const (
 	CodeDivisionByZero     ErrorCode = "division_by_zero"
 	CodeNegativeSquareRoot ErrorCode = "negative_square_root"
 	CodeNonFiniteNumber    ErrorCode = "non_finite_number"
+	CodeUnknownReference   ErrorCode = "unknown_reference"
+	CodeCycleDetected      ErrorCode = "cycle_detected"
 )
 
 // DomainError describes an invalid mathematical operation without exposing transport details.
