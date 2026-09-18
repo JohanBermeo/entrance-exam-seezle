@@ -1,0 +1,35 @@
+# Version control
+.git/
+.gitignore
+
+# Docker files themselves
+Dockerfile
+.dockerignore
+
+# Local tooling and docs (not needed in the image)
+Makefile
+README.md
+.env
+.env.*
+
+# Tests (CI runs them outside Docker; `go build` ignores *_test.go anyway)
+**/*_test.go
+tests/
+
+# Go build artifacts
+*.test
+*.out
+coverage.html
+coverage.txt
+
+# IDE and editor metadata
+.vscode/
+.idea/
+.cursor/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
