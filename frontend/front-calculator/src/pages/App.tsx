@@ -49,6 +49,7 @@ function App() {
     backspace,
     toggleSign,
     submit,
+    commitResult,
   } = useKeypad({
     onEquals: (expr) => void handleEqualsRef.current(expr),
     onEdit: markEdited,
@@ -68,10 +69,11 @@ function App() {
       }
       setClientError(null)
       const value = await calculate(expression)
-      // Tras `=`, la expresión pasa a ser el resultado (encadenar operaciones).
-      if (value !== null && value !== undefined) setExpression(String(value))
+      // Tras `=`, la expresión pasa a ser el resultado: una operación encadena,
+      // pero número, paréntesis o punto empiezan de cero (ver useKeypad).
+      if (value !== null && value !== undefined) commitResult(value)
     },
-    [validate, calculate, markEdited, setExpression],
+    [validate, calculate, markEdited, commitResult],
   )
 
   useEffect(() => {

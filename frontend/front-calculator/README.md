@@ -90,7 +90,8 @@ AC  +/-  (   ) | √  xʸ  ⌫  % | 7 8 9 ÷ | 4 5 6 × | 1 2 3 − | 0  .  =  +
 
 1. Construir expresión con keypad o teclado físico (`useKeypad`). Ante `sqrt(`, `percent(` o `(` tras dígito o `)` se inserta `×` explícito (la gramática no acepta multiplicación implícita).
 2. Validación cliente liviana (caracteres, paréntesis, funciones `sqrt`/`percent`).
-3. Pulsar `=` → `POST /v1/calculations` → resultado en `Display` o `ErrorToast` (con `position` si el backend la devuelve). Tras `=`, la expresión pasa a ser el resultado para encadenar operaciones.
+3. Pulsar `=` → `POST /v1/calculations` → resultado en `Display` o `ErrorToast` (con `position` si el backend la devuelve). Tras `=`, el renglón de operación queda vacío: una operación encadena desde el resultado, pero número, paréntesis o punto empiezan de cero.
+4. `+/-` niega con paréntesis (`5+3` → `5+(-3)`); repetir lo quita. Historial en memoria: clic para reutilizar expresión.
 4. Historial en memoria: clic para reutilizar expresión.
 
 ## CI

@@ -3,6 +3,9 @@ import { appendSymbol, toggleLastNumberSign } from '../utils/expression'
 
 const DIRECT_KEYS = new Set('0123456789+-*/().^%'.split(''))
 
+/** Tras `=`, estos símbolos empiezan una expresión nueva (el resto encadena). */
+const FRESH_CLEAR = /^[0-9().]$/
+
 export interface UseKeypadOptions {
   initialExpression?: string
   onEquals?: (expression: string) => void
@@ -13,7 +16,9 @@ export interface UseKeypadOptions {
 /** Construye la expresión desde el keypad virtual y el teclado físico. */
 export function useKeypad(options: UseKeypadOptions = {}) {
   const { initialExpression = '', onEquals, onEdit } = options
-  const [expression, setExpression] = useState(initialExpression)
+  const [expression, setExpressionState] = useState(initialExpression)
+  /** Resultado recién calculado: número/paréntesis/punto lo borran, operación encadena. */
+  const freshRef = useRef<string | null>(null)
   const onEqualsRef = useRef(onEquals)
   useEffect(() => {
     onEqualsRef.current = onEquals
@@ -23,24 +28,45 @@ export function useKeypad(options: UseKeypadOptions = {}) {
     onEditRef.current = onEdit
   }, [onEdit])
 
+  const setExpression = useCallback((value: string | ((prev: string) => string)) => {
+    freshRef.current = null
+    setExpressionState(value)
+  }, [])
+
+  /** Fija la expresión al resultado de `=` (habilita borrado fresco y encadenado). */
+  const commitResult = useCallback((value: number) => {
+    const text = String(value)
+    freshRef.current = text
+    setExpressionState(text)
+  }, [])
+
   const input = useCallback((symbol: string) => {
     onEditRef.current?.()
-    setExpression((prev) => appendSymbol(prev, symbol))
+    const fresh = freshRef.current
+    freshRef.current = null
+    setExpressionState((prev) =>
+      fresh !== null && FRESH_CLEAR.test(symbol) && prev === fresh
+        ? symbol
+        : appendSymbol(prev, symbol),
+    )
   }, [])
 
   const clear = useCallback(() => {
     onEditRef.current?.()
-    setExpression('')
+    freshRef.current = null
+    setExpressionState('')
   }, [])
 
   const backspace = useCallback(() => {
     onEditRef.current?.()
-    setExpression((prev) => prev.slice(0, -1))
+    freshRef.current = null
+    setExpressionState((prev) => prev.slice(0, -1))
   }, [])
 
   const toggleSign = useCallback(() => {
     onEditRef.current?.()
-    setExpression((prev) => toggleLastNumberSign(prev))
+    freshRef.current = null
+    setExpressionState((prev) => toggleLastNumberSign(prev))
   }, [])
 
   const submit = useCallback(() => {
@@ -48,7 +74,7 @@ export function useKeypad(options: UseKeypadOptions = {}) {
       onEqualsRef.current?.(current)
       return current
     })
-  }, [])
+  }, [setExpression])
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -69,5 +95,5 @@ export function useKeypad(options: UseKeypadOptions = {}) {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [input, backspace, clear, submit])
 
-  return { expression, setExpression, input, clear, backspace, toggleSign, submit }
+  return { expression, setExpression, input, clear, backspace, toggleSign, submit, commitResult }
 }

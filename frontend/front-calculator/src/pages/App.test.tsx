@@ -55,6 +55,14 @@ describe('App', () => {
     expect(seen).toEqual(['5+3', '8+2'])
   })
 
+  it('un número tras = empieza de cero', async () => {
+    render(<App />)
+    pressKeys('5', '+', '3', '=')
+    expect(await screen.findByText('8', { selector: '.display-value' })).toBeInTheDocument()
+    pressKeys('9')
+    expect(screen.getByText('9', { selector: '.display-expression' })).toBeInTheDocument()
+  })
+
   it('muestra el error de dominio del backend', async () => {
     server.use(
       http.post(URL, () =>
