@@ -1,0 +1,263 @@
+openapi: 3.0.3
+info:
+  title: Calculator API
+  version: 1.0.0
+  description: |
+    Small scalable calculator API. Each request is modeled as a graph of
+    operations (explicit DAG or an `expression` string compiled to the same
+    DAG). Independent nodes run in parallel with bounded fan-out and a
+    single fan-in collector; the client makes a single HTTP call.
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+paths:
+  /v1/calculations:
+    post:
+      operationId: executeCalculation
+      summary: Execute a calculation
+      description: |
+        Accepts exactly one input mode per request (mutually exclusive):
+        an explicit operation DAG (`operations` + `outputs`) or an
+        `expression` string compiled to the same DAG (single output).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalculationRequest'
+            examples:
+              dag:
+                summary: Explicit DAG
+                value:
+                  operations:
+                    - id: sum
+                      op: add
+                      inputs:
+                        - value: 12
+                        - value: 8
+                    - id: pow
+                      op: power
+                      inputs:
+                        - value: 4
+                        - value: 2
+                    - id: total
+                      op: multiply
+                      inputs:
+                        - ref: sum
+                        - ref: pow
+                  outputs:
+                    - total
+              expression:
+                summary: Expression mode
+                value:
+                  expression: sqrt(percent(200, 15)) + 4 ^ 2
+                  outputs:
+                    - result
+      responses:
+        '200':
+          description: Calculation executed; outputs follow the requested order.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalculationResponse'
+        '400':
+          description: Invalid JSON, mixed input modes, missing outputs, or malformed expression.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Domain rule violation (unknown operation, missing reference, cycle, division by zero, negative square root, non-finite result, wrong arity, expression limits).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '408':
+          description: Per-request deadline exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '499':
+          description: Client closed the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Unexpected failure; includes requestId, never internals.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /healthz:
+    get:
+      operationId: health
+      summary: Process health (load balancers)
+      responses:
+        '200':
+          description: Process is running.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponse'
+  /readyz:
+    get:
+      operationId: ready
+      summary: Ready to receive traffic
+      responses:
+        '200':
+          description: Ready to receive traffic.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponse'
+  /metrics:
+    get:
+      operationId: metrics
+      summary: In-process request metrics snapshot
+      responses:
+        '200':
+          description: Per-route counters, status breakdown, average latency and in-flight requests.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsSnapshot'
+components:
+  schemas:
+    CalculationRequest:
+      type: object
+      properties:
+        operations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Operation'
+        outputs:
+          type: array
+          items:
+            type: string
+          description: Operation IDs returned in order. Exactly one entry in expression mode.
+        expression:
+          type: string
+          description: Expression compiled to the DAG (e.g. "sqrt(percent(200, 15)) + 4 ^ 2").
+    Operation:
+      type: object
+      required:
+        - id
+        - op
+        - inputs
+      properties:
+        id:
+          type: string
+        op:
+          type: string
+          enum:
+            - add
+            - subtract
+            - multiply
+            - divide
+            - power
+            - sqrt
+            - percent
+        inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationInput'
+    OperationInput:
+      type: object
+      description: Either a literal number (value) or a reference to another operation (ref).
+      properties:
+        value:
+          type: number
+        ref:
+          type: string
+    CalculationResponse:
+      type: object
+      required:
+        - requestId
+        - results
+        - outputs
+        - outputValues
+        - durationMs
+      properties:
+        requestId:
+          type: string
+        results:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/OperationResult'
+        outputs:
+          type: array
+          items:
+            type: string
+        outputValues:
+          type: array
+          items:
+            type: number
+        outputErrors:
+          type: array
+          items:
+            type: string
+        durationMs:
+          type: integer
+    OperationResult:
+      type: object
+      required:
+        - id
+        - value
+      properties:
+        id:
+          type: string
+        value:
+          type: number
+        error:
+          type: string
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          example: division_by_zero
+        operation:
+          type: string
+        message:
+          type: string
+    StatusResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          example: ok
+    MetricsSnapshot:
+      type: object
+      required:
+        - routes
+        - inFlight
+      properties:
+        routes:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/RouteMetrics'
+        inFlight:
+          type: integer
+          description: Requests currently being processed.
+    RouteMetrics:
+      type: object
+      required:
+        - count
+        - byStatus
+        - avgDurationMs
+      properties:
+        count:
+          type: integer
+        byStatus:
+          type: object
+          additionalProperties:
+            type: integer
+        avgDurationMs:
+          type: number
