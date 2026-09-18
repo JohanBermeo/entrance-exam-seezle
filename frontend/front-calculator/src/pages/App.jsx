@@ -1,121 +1,57 @@
 import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
+import { Button, Card, Icon, Toast } from '../shared/ui/index.js'
 import './App.css'
 
+const ICON_NAMES = ['delete', 'sqrt', 'power', 'plus-minus', 'percent']
+
+/**
+ * Shell visual de F1 · Fundaciones: verifica tokens, shared/ui e iconos.
+ * El layout real de la calculadora (Display/Keypad) llega en F3.
+ */
 function App() {
-  const [count, setCount] = useState(0)
+  const [showToast, setShowToast] = useState(true)
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <main className="calc-module app-shell">
+      <header className="app-header">
+        <p className="app-kicker">Calculadora · F1 Fundaciones</p>
+        <h1 className="app-title">shared/ui + tokens</h1>
+      </header>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+      <Card className="app-preview">
+        <div className="calc-display app-display" aria-label="Display de ejemplo">
+          0
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
+        <div className="app-row">
+          <Button variant="primary" size="md">Primary</Button>
+          <Button variant="secondary" size="md">Secondary</Button>
+          <Button variant="ghost" size="md">Ghost</Button>
+          <Button variant="danger" size="sm">Danger</Button>
         </div>
-      </section>
+        <div className="app-row app-icons">
+          {ICON_NAMES.map((name) => (
+            <span key={name} className="app-icon-chip" title={name}>
+              <Icon name={name} size={22} />
+            </span>
+          ))}
+        </div>
+        <div className="app-row">
+          <button type="button" className="key key-number">7</button>
+          <button type="button" className="key key-operation">÷</button>
+          <button type="button" className="key key-function">AC</button>
+          <button type="button" className="key key-equals">=</button>
+        </div>
+      </Card>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      {showToast ? (
+        <Toast
+          tone="info"
+          title="F1 lista para revisión visual"
+          message="Tokens, Button, Card, Icon, Toast y 5 iconos como componentes."
+          onDismiss={() => setShowToast(false)}
+        />
+      ) : null}
+    </main>
   )
 }
 

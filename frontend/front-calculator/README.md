@@ -86,3 +86,11 @@ AC  +/-  %   ÷ | √  xʸ  ⌫  × | 7 8 9 − | 4 5 6 + | 1 2 3 = | 0(span2) .
 | F3 Componentes | tests de `Key`/`Display`/`Keypad`, grid 4×6 responsive |
 | F4 Integración | E2E manual: `sqrt(percent(200, 15)) + 4 ^ 2` → `=` → resultado ES → copiar → historial |
 | F5 Calidad | lint + typecheck + tests + build verdes, PR con descripción |
+
+## Estado de implementación
+
+- [x] **F1 Fundaciones** (rama `feat/frontend-foundations`): tokens (`designTokens.js` + `index.css` con JetBrains Mono CDN), `shared/ui` (`Button`, `Card`, `Icon`, `Toast`), `shared/utils` (`cn`, `formatNumber` es-ES), 5 iconos como componentes React, shell visual en `pages/App.jsx`, fix del import en `main.jsx`. Verificado: `pnpm lint` ✅, `pnpm build` ✅.
+- [ ] **F2 API + hooks**
+- [ ] **F3 Componentes feature**
+- [ ] **F4 Integración + polish**
+- [ ] **F5 Calidad**

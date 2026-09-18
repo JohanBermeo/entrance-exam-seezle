@@ -1,0 +1,5 @@
+export { DeleteIcon } from './DeleteIcon.jsx'
+export { SqrtIcon } from './SqrtIcon.jsx'
+export { PowerIcon } from './PowerIcon.jsx'
+export { PlusMinusIcon } from './PlusMinusIcon.jsx'
+export { PercentIcon } from './PercentIcon.jsx'
