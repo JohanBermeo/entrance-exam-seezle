@@ -2,6 +2,9 @@
 
 Servicio HTTP en Go para la calculadora. Esta primera fase incluye la configuración de ejecución, logging estructurado y endpoints de salud.
 
+**Plan de arquitectura y hitos (canónico):** [../docs/backend-calculator-plan.md](../docs/backend-calculator-plan.md)  
+**Instrucciones para agentes de IA:** [../AGENTS.md](../AGENTS.md)
+
 ## Requisitos
 
 - Go 1.27.1 o posterior compatible con el módulo.
