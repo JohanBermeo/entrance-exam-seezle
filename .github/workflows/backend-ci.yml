@@ -33,3 +33,21 @@ jobs:
         run: CGO_ENABLED=1 go test -race ./...
       - name: Run static analysis
         run: go vet ./...
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate OpenAPI contract
+        run: |
+          pip install --quiet pyyaml
+          python3 -c "
+          import yaml
+          spec = yaml.safe_load(open('backend/api/openapi.yaml'))
+          assert spec['openapi'].startswith('3.'), 'openapi major version'
+          paths = spec['paths']
+          for route in ['/v1/calculations', '/healthz', '/readyz', '/metrics']:
+              assert route in paths, f'missing path {route}'
+          assert 'post' in paths['/v1/calculations'], 'missing POST /v1/calculations'
+          assert 'CalculationResponse' in spec['components']['schemas'], 'missing response schema'
+          print('OpenAPI contract OK:', sorted(paths))
+          "

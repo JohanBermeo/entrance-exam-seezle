@@ -2,7 +2,8 @@
 
 Servicio HTTP en Go para la calculadora. Incluye configuración de ejecución, logging estructurado, endpoints de salud y el endpoint de cálculo `POST /v1/calculations` (DAG explícito o `expression` compilada al mismo DAG, ejecutado por el scheduler concurrente fan-out/fan-in del hito 04).
 
-**Plan de arquitectura y hitos (canónico):** [../docs/backend-calculator-plan.md](../docs/backend-calculator-plan.md)  
+**Plan de arquitectura y hitos (canónico):** [../docs/backend-calculator-plan.md](../docs/backend-calculator-plan.md)
+**Contrato OpenAPI:** [api/openapi.yaml](api/openapi.yaml) (fuente del contrato para React e integración)  
 **Instrucciones para agentes de IA:** [../AGENTS.md](../AGENTS.md)
 
 ## Requisitos
@@ -59,6 +60,15 @@ Errores: `400` (JSON inválido, modos mezclados, expresión malformada), `422` (
 
 Cada solicitud ejecuta su DAG con fan-out acotado (`CALC_MAX_WORKERS`) y un único recolector fan-in: los nodos independientes corren en paralelo y los dependientes esperan sus referencias. Ante el primer fallo se cancela el trabajo restante (fail-fast) y se reporta el error raíz; el orden de `outputs` en la respuesta siempre respeta el pedido aunque la ejecución interna sea paralela.
 
+## Métricas (hito 05)
+
+Instrumentación en proceso sin dependencias externas (`internal/platform/metrics`): contadores por ruta, desglose por estado HTTP, latencia media y solicitudes en curso.
+
+```bash
+curl http://localhost:8080/metrics
+# {"routes":{"POST /v1/calculations":{"count":1,"byStatus":{"200":1},"avgDurationMs":0}},"inFlight":0}
+```
+
 ## Configuración
 
 | Variable | Valor predeterminado | Descripción |
@@ -81,6 +91,8 @@ Cada solicitud ejecuta su DAG con fan-out acotado (`CALC_MAX_WORKERS`) y un úni
 
 ```bash
 go test ./...
-go test -race ./...
+go test -race ./...   # requiere gcc; corre en CI
 go vet ./...
 ```
+
+Tests de integración end-to-end en `tests/integration` (contrato HTTP, payloads inválidos, límites de tamaño y deadline). CI además valida que `api/openapi.yaml` declare las rutas servidas (ver `.github/workflows/backend-ci.yml`).
