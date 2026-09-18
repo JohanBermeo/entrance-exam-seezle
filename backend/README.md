@@ -1,6 +1,6 @@
 # Backend · Calculator API
 
-Servicio HTTP en Go para la calculadora. Esta primera fase incluye la configuración de ejecución, logging estructurado y endpoints de salud.
+Servicio HTTP en Go para la calculadora. Incluye configuración de ejecución, logging estructurado, endpoints de salud y el endpoint de cálculo `POST /v1/calculations` (hito 03: DAG explícito o `expression` compilada al mismo DAG; ejecución secuencial — el scheduler concurrente llega en el hito 04).
 
 **Plan de arquitectura y hitos (canónico):** [../docs/backend-calculator-plan.md](../docs/backend-calculator-plan.md)  
 **Instrucciones para agentes de IA:** [../AGENTS.md](../AGENTS.md)
@@ -24,6 +24,36 @@ curl http://localhost:8080/healthz
 curl http://localhost:8080/readyz
 # {"status":"ready"}
 ```
+
+## Calcular (hito 03)
+
+Un solo endpoint acepta **uno** de los dos modos (mutuamente excluyentes):
+
+```bash
+# DAG explícito
+curl -X POST http://localhost:8080/v1/calculations \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "operations": [
+      {"id": "sum", "op": "add", "inputs": [{"value": 12}, {"value": 8}]},
+      {"id": "pow", "op": "power", "inputs": [{"value": 4}, {"value": 2}]},
+      {"id": "total", "op": "multiply", "inputs": [{"ref": "sum"}, {"ref": "pow"}]}
+    ],
+    "outputs": ["total"]
+  }'
+# {"requestId":"...","results":{...},"outputs":["total"],"outputValues":[320],"durationMs":...}
+
+# Modo expresión (una sola salida en `outputs`)
+curl -X POST http://localhost:8080/v1/calculations \
+  -H 'Content-Type: application/json' \
+  -d '{"expression": "sqrt(percent(200, 15)) + 4 ^ 2", "outputs": ["result"]}'
+# outputValues ≈ [21.477]
+```
+
+Operadores: `add`, `subtract`, `multiply`, `divide`, `power`, `sqrt`, `percent(value, rate)`.
+Precedencia de la expresión: paréntesis → funciones (`sqrt`, `percent`) → potencia `^` (derecha) → signo unario → `* /` → `+ -`. Límites: 100 nodos y profundidad 50 por expresión.
+
+Errores: `400` (JSON inválido, modos mezclados, expresión malformada), `422` (operación desconocida, referencia ausente, ciclo, división por cero, raíz negativa, resultado no finito, aridad), `408`/`499` (deadline/cancelación).
 
 ## Configuración
 
