@@ -1,0 +1,111 @@
+# =============================================================================
+# Root .gitignore - Fullstack Project (Go Backend + React Frontend)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Operating System Files
+# -----------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+[Dd]esktop.ini
+
+# -----------------------------------------------------------------------------
+# IDE & Editor Settings
+# -----------------------------------------------------------------------------
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+*.sln
+*.suo
+
+# -----------------------------------------------------------------------------
+# Environment & Secret Variables
+# -----------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.local
+
+# -----------------------------------------------------------------------------
+# Frontend (React / Vite / Node / Package Managers)
+# -----------------------------------------------------------------------------
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+out/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Caches & temporary files
+.eslintcache
+.stylelintcache
+.turbo/
+.cache/
+*.tsbuildinfo
+
+# Coverage & testing
+coverage/
+.nyc_output/
+
+# -----------------------------------------------------------------------------
+# Backend (Go)
+# -----------------------------------------------------------------------------
+# Compiled binaries and executables
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+
+# Common Go build outputs (without extension in Unix)
+backend/main
+backend/server
+main
+server
+
+# Test binaries and coverage reports
+*.test
+*.out
+*.prof
+*.cover
+*.coverprofile
+coverage.txt
+coverage.html
+
+# Hot reload temporary artifacts (Air, CompileDaemon, etc.)
+tmp/
+.air/
+
+# Go workspace (uncomment if you use local-only multi-module workspaces)
+# go.work
+# go.work.sum
+
+# Go vendor directory (uncomment if you do not want to track vendored dependencies)
+# vendor/
