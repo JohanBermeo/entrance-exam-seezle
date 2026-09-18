@@ -77,7 +77,7 @@ Reglas: componentes presentacionales + hooks con lógica; solo `api/` conoce la 
 ## Keypad (layout acordado)
 
 ```text
-AC  +/-  %   ÷ | √  xʸ  ⌫  × | 7 8 9 − | 4 5 6 + | 1 2 3 = | 0(span2) . [vacío]
+AC  +/-  (   ) | √  xʸ  ⌫  % | 7 8 9 ÷ | 4 5 6 × | 1 2 3 − | 0  .  =  +
 ```
 
 - Números/`.` → fondo `#FFF`, texto `#1A1A1A`.

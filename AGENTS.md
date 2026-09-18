@@ -54,7 +54,7 @@ Track detailed phases in [docs/frontend-calculator-plan.md](docs/frontend-calcul
 
 **v1 frontend contract:** expression-only mode (`{ expression, outputs: ["result"] }`), `fetch` + `useState` + `AbortController`, history in memory only (no `localStorage`), numbers formatted with `es-ES` locale.
 
-**v1 keypad (definitive):** `AC +/- % ÷` · `√ xʸ ⌫ ×` · `7 8 9 −` · `4 5 6 +` · `1 2 3 =` · `0(span 2) . [empty]`. Tokens: accent `#833AED`, `=` bg `#6B21A8`, font `JetBrains Mono` (CDN).
+**v1 keypad (definitive):** `AC +/- ( )` · `√ xʸ ⌫ %` · `7 8 9 ÷` · `4 5 6 ×` · `1 2 3 −` · `0 . = +` (24 teclas, sin spans ni vacíos). Tokens: accent `#833AED`, `=` bg `#6B21A8`, font `JetBrains Mono` (CDN).
 
 ## Commands agents should run
 
