@@ -10,7 +10,10 @@ import (
 	"syscall"
 	"time"
 
+	"back-calculator/internal/application"
 	"back-calculator/internal/config"
+	"back-calculator/internal/domain/operators"
+	"back-calculator/internal/engine"
 	transporthttp "back-calculator/internal/transport/http"
 )
 
@@ -22,9 +25,16 @@ func main() {
 	}
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: cfg.LogLevel}))
+	registry := operators.NewRegistry()
+	options := application.Options{
+		Registry:  registry,
+		Scheduler: engine.NewScheduler(registry, cfg.MaxWorkers),
+		MaxNodes:  cfg.MaxNodes,
+		MaxDepth:  cfg.MaxDepth,
+	}
 	server := &http.Server{
 		Addr:              ":" + cfg.Port,
-		Handler:           transporthttp.NewRouter(logger),
+		Handler:           transporthttp.NewRouterWithOptions(logger, options, cfg.CalculationTimeout, cfg.MaxBodyBytes),
 		ReadHeaderTimeout: cfg.ReadHeaderTimeout,
 		ReadTimeout:       cfg.ReadTimeout,
 		WriteTimeout:      cfg.WriteTimeout,
@@ -32,7 +42,7 @@ func main() {
 	}
 
 	go func() {
-		logger.Info("HTTP server listening", "address", server.Addr, "environment", cfg.Environment)
+		logger.Info("HTTP server listening", "address", server.Addr, "environment", cfg.Environment, "max_workers", cfg.MaxWorkers)
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.Error("HTTP server stopped unexpectedly", "error", err)
 			os.Exit(1)

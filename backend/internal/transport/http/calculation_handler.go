@@ -11,34 +11,51 @@ import (
 	"back-calculator/internal/application"
 	"back-calculator/internal/domain/calculation"
 	"back-calculator/internal/domain/operators"
+	"back-calculator/internal/engine"
 )
 
 // CalculationHandler handles POST /v1/calculations requests.
 type CalculationHandler struct {
-	logger   *slog.Logger
-	registry operators.Registry
+	logger  *slog.Logger
+	options application.Options
+	timeout time.Duration
+	maxBody int64
 }
 
 // NewCalculationHandler creates a new calculation handler.
 func NewCalculationHandler(logger *slog.Logger, registry operators.Registry) *CalculationHandler {
+	return NewCalculationHandlerWithOptions(logger, application.Options{
+		Registry:  registry,
+		Scheduler: engine.NewScheduler(registry, 1),
+		MaxNodes:  100,
+		MaxDepth:  50,
+	}, 30*time.Second, 1<<20)
+}
+
+// NewCalculationHandlerWithOptions creates a calculation handler with explicit
+// execution options, request timeout and payload size limit.
+func NewCalculationHandlerWithOptions(logger *slog.Logger, options application.Options, timeout time.Duration, maxBody int64) *CalculationHandler {
 	return &CalculationHandler{
-		logger:   logger,
-		registry: registry,
+		logger:  logger,
+		options: options,
+		timeout: timeout,
+		maxBody: maxBody,
 	}
 }
 
 // ServeHTTP handles the calculation request.
 func (h *CalculationHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), h.timeout)
 	defer cancel()
 
+	r.Body = http.MaxBytesReader(w, r.Body, h.maxBody)
 	var req application.Request
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		h.writeError(w, http.StatusBadRequest, calculation.CodeInvalidInput, "invalid JSON: "+err.Error())
 		return
 	}
 
-	resp, err := application.ExecuteCalculation(ctx, req, h.registry)
+	resp, err := application.ExecuteWithOptions(ctx, req, h.options)
 	if err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
 			h.writeError(w, http.StatusRequestTimeout, calculation.CodeInvalidInput, "deadline exceeded")

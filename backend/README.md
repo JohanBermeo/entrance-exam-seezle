@@ -1,6 +1,6 @@
 # Backend · Calculator API
 
-Servicio HTTP en Go para la calculadora. Incluye configuración de ejecución, logging estructurado, endpoints de salud y el endpoint de cálculo `POST /v1/calculations` (hito 03: DAG explícito o `expression` compilada al mismo DAG; ejecución secuencial — el scheduler concurrente llega en el hito 04).
+Servicio HTTP en Go para la calculadora. Incluye configuración de ejecución, logging estructurado, endpoints de salud y el endpoint de cálculo `POST /v1/calculations` (DAG explícito o `expression` compilada al mismo DAG, ejecutado por el scheduler concurrente fan-out/fan-in del hito 04).
 
 **Plan de arquitectura y hitos (canónico):** [../docs/backend-calculator-plan.md](../docs/backend-calculator-plan.md)  
 **Instrucciones para agentes de IA:** [../AGENTS.md](../AGENTS.md)
@@ -55,6 +55,10 @@ Precedencia de la expresión: paréntesis → funciones (`sqrt`, `percent`) → 
 
 Errores: `400` (JSON inválido, modos mezclados, expresión malformada), `422` (operación desconocida, referencia ausente, ciclo, división por cero, raíz negativa, resultado no finito, aridad), `408`/`499` (deadline/cancelación).
 
+## Concurrencia (hito 04)
+
+Cada solicitud ejecuta su DAG con fan-out acotado (`CALC_MAX_WORKERS`) y un único recolector fan-in: los nodos independientes corren en paralelo y los dependientes esperan sus referencias. Ante el primer fallo se cancela el trabajo restante (fail-fast) y se reporta el error raíz; el orden de `outputs` en la respuesta siempre respeta el pedido aunque la ejecución interna sea paralela.
+
 ## Configuración
 
 | Variable | Valor predeterminado | Descripción |
@@ -67,6 +71,11 @@ Errores: `400` (JSON inválido, modos mezclados, expresión malformada), `422` (
 | `HTTP_WRITE_TIMEOUT` | `15s` | Tiempo máximo para escribir la respuesta. |
 | `HTTP_IDLE_TIMEOUT` | `60s` | Tiempo máximo de una conexión inactiva. |
 | `SHUTDOWN_TIMEOUT` | `10s` | Límite para apagado ordenado. |
+| `CALC_MAX_WORKERS` | `8` | Goroutines concurrentes máximas por solicitud. |
+| `CALC_TIMEOUT` | `30s` | Deadline de `POST /v1/calculations`. |
+| `CALC_MAX_BODY_BYTES` | `1048576` | Tamaño máximo del payload de cálculo. |
+| `CALC_MAX_NODES` | `100` | Nodos máximos compilados desde una expresión. |
+| `CALC_MAX_DEPTH` | `50` | Profundidad máxima del AST aceptada. |
 
 ## Verificación
 

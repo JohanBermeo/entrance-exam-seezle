@@ -6,17 +6,31 @@ import (
 	"net/http"
 	"time"
 
+	"back-calculator/internal/application"
 	"back-calculator/internal/domain/operators"
+	"back-calculator/internal/engine"
 )
 
-// NewRouter returns the public HTTP surface for the calculator API.
+// NewRouter returns the public HTTP surface for the calculator API
+// with default execution options.
 func NewRouter(logger *slog.Logger) http.Handler {
+	registry := operators.NewRegistry()
+	return NewRouterWithOptions(logger, application.Options{
+		Registry:  registry,
+		Scheduler: engine.NewScheduler(registry, 8),
+		MaxNodes:  100,
+		MaxDepth:  50,
+	}, 30*time.Second, 1<<20)
+}
+
+// NewRouterWithOptions returns the HTTP surface with explicit execution
+// options, request timeout and payload size limit.
+func NewRouterWithOptions(logger *slog.Logger, options application.Options, timeout time.Duration, maxBody int64) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", healthHandler)
 	mux.HandleFunc("GET /readyz", readyHandler)
 
-	registry := operators.NewRegistry()
-	calcHandler := NewCalculationHandler(logger, registry)
+	calcHandler := NewCalculationHandlerWithOptions(logger, options, timeout, maxBody)
 	mux.Handle("POST /v1/calculations", calcHandler)
 
 	return requestID(recoverPanic(logger, logRequests(logger, mux)))

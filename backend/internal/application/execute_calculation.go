@@ -2,13 +2,13 @@ package application
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
 	"back-calculator/internal/domain/calculation"
 	"back-calculator/internal/domain/expression"
 	"back-calculator/internal/domain/operators"
+	"back-calculator/internal/engine"
 )
 
 // Request represents the input for a calculation.
@@ -28,10 +28,33 @@ type Response struct {
 	DurationMs   int64               `json:"durationMs"`
 }
 
+// Options carries the execution dependencies for a calculation.
+type Options struct {
+	Registry operators.Registry
+	// Scheduler runs the validated DAG concurrently. Zero value executes
+	// sequentially (a single worker slot).
+	Scheduler engine.Scheduler
+	// MaxNodes caps the operations compiled from an expression.
+	MaxNodes int
+	// MaxDepth caps the expression AST depth accepted by the compiler.
+	MaxDepth int
+}
+
 // ExecuteCalculation executes a calculation request and returns the response.
 func ExecuteCalculation(ctx context.Context, req Request, registry operators.Registry) (Response, error) {
+	return ExecuteWithOptions(ctx, req, Options{
+		Registry:  registry,
+		Scheduler: engine.NewScheduler(registry, 1),
+		MaxNodes:  100,
+		MaxDepth:  50,
+	})
+}
+
+// ExecuteWithOptions executes a calculation request with explicit execution options.
+func ExecuteWithOptions(ctx context.Context, req Request, opts Options) (Response, error) {
 	startTime := time.Now()
 	requestID := generateRequestID()
+	registry := opts.Registry
 
 	// Validate request
 	if req.Expression != "" && len(req.Operations) > 0 {
@@ -69,7 +92,7 @@ func ExecuteCalculation(ctx context.Context, req Request, registry operators.Reg
 		}
 
 		compiler := expression.NewCompiler(registry)
-		compiler.SetLimits(100, 50)
+		compiler.SetLimits(opts.MaxNodes, opts.MaxDepth)
 		graph, compileErrors = compiler.Compile(expr, req.Outputs[0])
 		if len(compileErrors) > 0 {
 			var msgs []string
@@ -88,20 +111,14 @@ func ExecuteCalculation(ctx context.Context, req Request, registry operators.Reg
 		}
 	}
 
-	// Execute the graph (sequential in M03; concurrent scheduler arrives in M04).
-	results, execErrors := executeGraph(ctx, graph, registry)
-	if len(execErrors) > 0 {
-		// Surface the root domain error so the HTTP layer maps it to
-		// 422 (domain rule) or 408/499 (deadline/cancel) per the plan.
-		// Per-operation partial results will be formalized with the
-		// scheduler + OpenAPI contract in M04/M05.
-		for _, execErr := range execErrors {
-			var domainErr *calculation.DomainError
-			if errors.As(execErr, &domainErr) {
-				return Response{}, domainErr
-			}
-		}
-		return Response{}, execErrors[0]
+	// Execute the graph with the concurrent fan-out/fan-in scheduler.
+	// On failure the root error surfaces so the HTTP layer maps it to
+	// 422 (domain rule) or 408/499 (deadline/cancel) per the plan.
+	// Per-operation partial results will be formalized with the
+	// OpenAPI contract in M05.
+	results, err := opts.Scheduler.Execute(ctx, graph)
+	if err != nil {
+		return Response{}, err
 	}
 
 	return Response{
@@ -111,83 +128,6 @@ func ExecuteCalculation(ctx context.Context, req Request, registry operators.Reg
 		OutputValues: results.OutputValues(req.Outputs),
 		DurationMs:   time.Since(startTime).Milliseconds(),
 	}, nil
-}
-
-func executeGraph(ctx context.Context, graph *calculation.Graph, registry operators.Registry) (calculation.Results, []error) {
-	results := make(calculation.Results)
-	completed := make(map[string]bool)
-	var execErrors []error
-
-	// Simple sequential execution for now (will be replaced with concurrent scheduler in M04)
-	// Process operations in topological order using Kahn's algorithm
-	remaining := graph.Len()
-	for remaining > 0 {
-		select {
-		case <-ctx.Done():
-			execErrors = append(execErrors, ctx.Err())
-			return results, execErrors
-		default:
-		}
-
-		progress := false
-		for _, op := range graph.Operations {
-			if completed[op.ID] {
-				continue
-			}
-
-			// Check if all dependencies are met
-			allMet := true
-			for _, input := range op.Inputs {
-				if input.IsRef() && !completed[*input.Ref] {
-					allMet = false
-					break
-				}
-			}
-
-			if !allMet {
-				continue
-			}
-
-			// Execute operation
-			var inputs []float64
-			for _, input := range op.Inputs {
-				if input.IsLiteral() {
-					inputs = append(inputs, *input.Value)
-				} else {
-					res, ok := results.Get(*input.Ref)
-					if !ok || res.HasError() {
-						// Dependency failed
-						results.SetError(op.ID, "dependency "+*input.Ref+" failed")
-						execErrors = append(execErrors, fmt.Errorf("dependency %s failed", *input.Ref))
-					} else {
-						inputs = append(inputs, res.Value)
-					}
-				}
-			}
-
-			if len(inputs) == len(op.Inputs) {
-				value, err := registry.Evaluate(op.Op, inputs)
-				if err != nil {
-					results.SetError(op.ID, err.Error())
-					execErrors = append(execErrors, err)
-				} else {
-					results.Set(op.ID, value)
-				}
-			}
-
-			completed[op.ID] = true
-			remaining--
-			progress = true
-		}
-
-		if !progress {
-			// Cycle or deadlock - should have been caught in validation
-			execErrors = append(execErrors, fmt.Errorf("execution deadlock: no progress made"))
-			break
-		}
-	}
-
-	return results, execErrors
 }
 
 func generateRequestID() string {
