@@ -35,7 +35,7 @@ func NewGraph(ops []Operation, outputs []string, knownOps map[string]int) (*Grap
 
 	for _, outID := range outputs {
 		if _, exists := index[outID]; !exists {
-			return nil, NewDomainError(CodeInvalidInput, outID, "output references unknown operation")
+			return nil, NewDomainError(CodeUnknownReference, outID, "output references unknown operation")
 		}
 	}
 
@@ -44,14 +44,16 @@ func NewGraph(ops []Operation, outputs []string, knownOps map[string]int) (*Grap
 	for _, op := range ops {
 		adj[op.ID] = nil
 		reverse[op.ID] = nil
+	}
+	for _, op := range ops {
 		for _, input := range op.Inputs {
 			if input.IsRef() {
 				refID := *input.Ref
 				if _, exists := index[refID]; !exists {
-					return nil, NewDomainError(CodeInvalidInput, op.ID, "references unknown operation "+refID)
+					return nil, NewDomainError(CodeUnknownReference, op.ID, "references unknown operation "+refID)
 				}
 				if refID == op.ID {
-					return nil, NewDomainError(CodeInvalidInput, op.ID, "operation cannot reference itself")
+					return nil, NewDomainError(CodeCycleDetected, op.ID, "operation cannot reference itself")
 				}
 				adj[refID] = append(adj[refID], op.ID)
 				reverse[op.ID] = append(reverse[op.ID], refID)
@@ -84,7 +86,7 @@ func detectCycles(ops []Operation, adj map[string][]string) error {
 		for _, neighbor := range adj[id] {
 			switch color[neighbor] {
 			case 1:
-				return NewDomainError(CodeInvalidInput, id, "cycle detected involving "+neighbor)
+				return NewDomainError(CodeCycleDetected, id, "cycle detected involving "+neighbor)
 			case 0:
 				if err := dfs(neighbor); err != nil {
 					return err
@@ -137,7 +139,8 @@ func (g *Graph) Len() int {
 // ReadyOperations returns operations that have no unmet dependencies (for initial scheduling).
 func (g *Graph) ReadyOperations(completed map[string]bool) []*Operation {
 	var ready []*Operation
-	for _, op := range g.Operations {
+	for i := range g.Operations {
+		op := &g.Operations[i]
 		if completed[op.ID] {
 			continue
 		}
@@ -151,7 +154,7 @@ func (g *Graph) ReadyOperations(completed map[string]bool) []*Operation {
 			}
 		}
 		if allMet {
-			ready = append(ready, &op)
+			ready = append(ready, op)
 		}
 	}
 	return ready

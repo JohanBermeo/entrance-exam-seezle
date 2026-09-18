@@ -2,9 +2,9 @@ package calculation
 
 // Result holds the computed value for an operation.
 type Result struct {
-	ID     string  `json:"id"`
-	Value  float64 `json:"value"`
-	Error  string  `json:"error,omitempty"`
+	ID    string  `json:"id"`
+	Value float64 `json:"value"`
+	Error string  `json:"error,omitempty"`
 }
 
 // Results is a collection of results indexed by operation ID.

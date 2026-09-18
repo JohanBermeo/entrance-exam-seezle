@@ -2,6 +2,7 @@ package calculation
 
 import (
 	"math"
+	"strconv"
 )
 
 // Input represents either a literal number or a reference to another operation's result.
@@ -57,13 +58,13 @@ func (o *Operation) Validate(knownOps map[string]int) error {
 	}
 	for i, input := range o.Inputs {
 		if input.IsLiteral() && (math.IsNaN(*input.Value) || math.IsInf(*input.Value, 0)) {
-			return NewDomainError(CodeInvalidInput, o.Op, "input at index "+string(rune(i))+" must be a finite number")
+			return NewDomainError(CodeInvalidInput, o.Op, "input at index "+strconv.Itoa(i)+" must be a finite number")
 		}
 		if input.IsRef() && *input.Ref == "" {
 			return NewDomainError(CodeInvalidInput, o.Op, "reference id cannot be empty")
 		}
 		if !input.IsLiteral() && !input.IsRef() {
-			return NewDomainError(CodeInvalidInput, o.Op, "input at index "+string(rune(i))+" must be a value or ref")
+			return NewDomainError(CodeInvalidInput, o.Op, "input at index "+strconv.Itoa(i)+" must be a value or ref")
 		}
 	}
 	return nil
