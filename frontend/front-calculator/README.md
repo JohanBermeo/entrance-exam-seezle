@@ -1,16 +1,88 @@
-# React + Vite
+# front-calculator · React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+UI de calculadora (modo **expresión**) que consume `POST /v1/calculations` del backend.
+Plan canónico: [docs/frontend-calculator-plan.md](../../docs/frontend-calculator-plan.md). Contrato backend: [docs/backend-calculator-plan.md](../../docs/backend-calculator-plan.md).
 
-Currently, two official plugins are available:
+## Requisitos
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node 20+, `pnpm` (o `npm`).
+- Backend corriendo (por defecto `http://localhost:8080`).
 
-## React Compiler
+## Variables de entorno
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```env
+# frontend/front-calculator/.env
+VITE_API_BASE_URL=http://localhost:8080
+```
 
-## Expanding the ESLint configuration
+## Scripts
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+pnpm install
+pnpm dev        # desarrollo (http://localhost:5173)
+pnpm build      # build producción
+pnpm preview    # previsualizar build
+pnpm lint       # eslint
+```
+
+Cuando se añada TypeScript/tests:
+
+```bash
+pnpm typecheck  # tsc --noEmit
+pnpm test       # vitest run
+```
+
+## Arquitectura
+
+```text
+src/
+├── features/calculator/
+│   ├── api/         # calculationApi.ts (fetch), types.ts (request/response/error)
+│   ├── components/  # CalculatorLayout, Display, Keypad, Key, HistoryPanel, ErrorToast
+│   ├── hooks/       # useCalculation, useExpressionValidation, useKeypad, useHistory
+│   └── utils/       # keypadLayout, expressionHelpers, formatResult
+├── shared/
+│   ├── ui/          # Button, Card, Icon, Toast
+│   ├── utils/       # cn, formatNumber
+│   └── constants/   # designTokens.ts
+├── assets/icons/    # DeleteIcon (existente), SqrtIcon, PowerIcon, PlusMinusIcon, PercentIcon
+├── App.tsx / main.tsx / index.css
+```
+
+Reglas: componentes presentacionales + hooks con lógica; solo `api/` conoce la URL y el mapeo de errores HTTP.
+
+## Integración con la API
+
+- `POST {VITE_API_BASE_URL}/v1/calculations` con `{ expression, outputs: ["result"] }`.
+- Mapeo: `400→validation`, `422→domain`, `408/499→timeout`, fallo red→`network`.
+- `useCalculation` usa `AbortController` (cada cálculo cancela el anterior) y guarda historial en memoria (máx. 20, sin `localStorage` en v1).
+- Formato de números: locale `es-ES` (`Intl.NumberFormat('es-ES')`).
+
+## Keypad (layout acordado)
+
+```text
+AC  +/-  %   ÷ | √  xʸ  ⌫  × | 7 8 9 − | 4 5 6 + | 1 2 3 = | 0(span2) . [vacío]
+```
+
+- Números/`.` → fondo `#FFF`, texto `#1A1A1A`.
+- Operaciones/funciones → fondo `rgba(131,58,237,0.12)`, símbolo `#833AED`.
+- `=` → fondo `#6B21A8` (hover `#581C87`), texto blanco.
+- Grid 4 cols, gap `8px`; botón `64px` (56px móvil); módulo `max-width 360px`, padding `24px`, radius `20px`, sombra morada.
+- Fuente `JetBrains Mono` vía CDN (`@import` en `index.css`); display `48px` (36px móvil).
+
+## Flujo de uso
+
+1. Construir expresión con keypad o teclado físico (`useKeypad`).
+2. Validación cliente liviana (caracteres, paréntesis, funciones `sqrt`/`percent`).
+3. Pulsar `=` → `POST /v1/calculations` → resultado en `Display` o `ErrorToast` (con `position` si el backend la devuelve).
+4. Historial en memoria: clic para reutilizar expresión.
+
+## Verificación por fase
+
+| Fase | Verificar con |
+| --- | --- |
+| F1 Fundaciones | `pnpm lint`, `tsc --noEmit` (cuando aplique), `pnpm build`, check visual de `shared/ui` |
+| F2 API + hooks | `pnpm test` (Vitest + MSW: success, 400, 422, timeout, network) |
+| F3 Componentes | tests de `Key`/`Display`/`Keypad`, grid 4×6 responsive |
+| F4 Integración | E2E manual: `sqrt(percent(200, 15)) + 4 ^ 2` → `=` → resultado ES → copiar → historial |
+| F5 Calidad | lint + typecheck + tests + build verdes, PR con descripción |
