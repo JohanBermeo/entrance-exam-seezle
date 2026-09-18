@@ -16,14 +16,14 @@ When the plan and existing code disagree, **do not silently drift**: align with 
 
 - **One milestone at a time.** Do not start the next milestone until the user **explicitly confirms** the current one is approved and asks to continue.
 - **PR por hito (agente):** al cerrar el hito, abrir la PR hacia `main` con una descripción adecuada de lo realizado; **no mergear** salvo petición explícita del humano en esa conversación.
-- **End of milestone:** run verification; update the matching README (`backend/README.md` or `frontend/front-calculator/README.md`, or both if applicable); open the PR with a proper description, give a short summary and branch name, then **stop and wait** for user approval before any new scope.
+- **End of milestone:** run verification; update the matching section of the root [README](README.md) (Backend and/or Frontend as applicable); open the PR with a proper description, give a short summary and branch name, then **stop and wait** for user approval before any new scope.
 
 Full detail: [docs/development-protocol.md](docs/development-protocol.md).
 
 ## Repository layout
 
-- `backend/` — Go HTTP API (`back-calculator` module). See [backend/README.md](backend/README.md) for local run and env vars.
-- `frontend/front-calculator/` — React + Vite UI (expression mode, consumes `POST /v1/calculations`). See [frontend/front-calculator/README.md](frontend/front-calculator/README.md) for scripts and env vars.
+- `backend/` — Go HTTP API (`back-calculator` module). See the root [README](README.md) (Backend section) for local run and env vars.
+- `frontend/front-calculator/` — React + TypeScript + Vite UI (expression mode, consumes `POST /v1/calculations`). See the root [README](README.md) (Frontend section) for scripts and env vars.
 - `.github/workflows/` — CI (backend tests, lint, race detector as configured).
 
 ## Backend implementation status (high level)

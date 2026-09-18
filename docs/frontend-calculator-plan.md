@@ -91,7 +91,7 @@ Paleta derivada del icono provisto (`DeleteIcon`, `#833AED`) + blanco.
 | `module`                                          | Centrado,`max-width 360px`, padding `24px`                                    |
 | `breakpoints`                                     | `480px` móvil / `768px` tablet / `1024px` desktop                          |
 
-Implementación: custom properties en `src/index.css` + `shared/constants/designTokens.ts` tipado. Ver detalle en `frontend/front-calculator/README.md`.
+Implementación: custom properties en `src/index.css` + `shared/constants/designTokens.ts` tipado. Ver detalle en el [README raíz](../../README.md) (sección Frontend).
 
 ## Arquitectura por capas
 
@@ -127,8 +127,7 @@ frontend/front-calculator/
 │   ├── pages/App.tsx
 │   ├── main.tsx
 │   └── index.css
-├── .env                        # VITE_API_BASE_URL=http://localhost:8080
-└── README.md
+└── .env                        # VITE_API_BASE_URL=http://localhost:8080 (ver README raíz)
 ```
 
 ## Validación cliente (liviana, no sustituye al backend)
