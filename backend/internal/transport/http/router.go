@@ -5,6 +5,8 @@ import (
 	"log/slog"
 	"net/http"
 	"time"
+
+	"back-calculator/internal/domain/operators"
 )
 
 // NewRouter returns the public HTTP surface for the calculator API.
@@ -12,6 +14,10 @@ func NewRouter(logger *slog.Logger) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", healthHandler)
 	mux.HandleFunc("GET /readyz", readyHandler)
+
+	registry := operators.NewRegistry()
+	calcHandler := NewCalculationHandler(logger, registry)
+	mux.Handle("POST /v1/calculations", calcHandler)
 
 	return requestID(recoverPanic(logger, logRequests(logger, mux)))
 }
