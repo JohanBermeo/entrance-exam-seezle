@@ -3,6 +3,7 @@ package operators
 type percentage struct{}
 
 func (percentage) Name() string { return "percent" }
+func (percentage) Arity() int { return 2 }
 
 func (percentage) Evaluate(inputs []float64) (float64, error) {
 	if err := validateInputs("percent", inputs, 2); err != nil {

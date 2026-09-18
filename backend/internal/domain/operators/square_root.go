@@ -9,6 +9,7 @@ import (
 type squareRoot struct{}
 
 func (squareRoot) Name() string { return "sqrt" }
+func (squareRoot) Arity() int { return 1 }
 
 func (squareRoot) Evaluate(inputs []float64) (float64, error) {
 	if err := validateInputs("sqrt", inputs, 1); err != nil {

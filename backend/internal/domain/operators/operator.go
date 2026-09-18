@@ -9,6 +9,7 @@ import (
 // Operator evaluates one mathematical operation over an ordered set of inputs.
 type Operator interface {
 	Name() string
+	Arity() int
 	Evaluate(inputs []float64) (float64, error)
 }
 
