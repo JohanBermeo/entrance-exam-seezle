@@ -55,4 +55,20 @@ describe('useKeypad', () => {
     })
     expect(result.current.expression).toBe('')
   })
+
+  it('notifica onEdit en cada edición pero no en submit', () => {
+    const onEdit = vi.fn()
+    const onEquals = vi.fn()
+    const { result } = renderHook(() => useKeypad({ onEdit, onEquals }))
+    act(() => {
+      result.current.input('5')
+      result.current.backspace()
+      result.current.toggleSign()
+      result.current.clear()
+    })
+    expect(onEdit).toHaveBeenCalledTimes(4)
+    act(() => result.current.submit())
+    expect(onEdit).toHaveBeenCalledTimes(4)
+    expect(onEquals).toHaveBeenCalledTimes(1)
+  })
 })

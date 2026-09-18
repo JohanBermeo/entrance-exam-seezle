@@ -1,59 +1,151 @@
-import { useState } from 'react'
-import { Button, Card, Icon } from '../components/index'
-import type { IconName } from '../components/index'
-import { Toast } from '../components/index'
+import { useCallback, useState } from 'react'
+import {
+  CalculatorLayout,
+  Display,
+  ErrorToast,
+  HistoryPanel,
+  Keypad,
+  useCalculation,
+  useExpressionValidation,
+  useKeypad,
+} from '../features/calculator/index'
+import type {
+  CalculationError,
+  HistoryEntry,
+  KeyDef,
+} from '../features/calculator/index'
 import './App.css'
 
-const ICON_NAMES: IconName[] = ['delete']
-
-/**
- * Shell visual de F1 · Fundaciones: verifica tokens, components e iconos.
- * El layout real de la calculadora (Display/Keypad) llega en F3.
- */
+/** F4 · Integración: cablea keypad + validación + API + historial. */
 function App() {
-  const [showToast, setShowToast] = useState(true)
+  const {
+    result,
+    error: serverError,
+    isLoading,
+    history,
+    calculate,
+    clearHistory,
+    clearError,
+  } = useCalculation()
+  const { validate } = useExpressionValidation()
+  const [clientError, setClientError] = useState<CalculationError | null>(null)
+  const [copied, setCopied] = useState(false)
+
+  // El error de validación y el flag de copiado expiran al editar o recalcular.
+  const markEdited = useCallback(() => {
+    setClientError(null)
+    setCopied(false)
+  }, [])
+
+  const handleEquals = useCallback(
+    async (expression: string) => {
+      markEdited()
+      const issue = validate(expression)
+      if (!issue.valid) {
+        setClientError({
+          type: 'validation',
+          message: issue.error ?? 'Expresión inválida',
+          position: issue.position,
+        })
+        return
+      }
+      setClientError(null)
+      await calculate(expression)
+    },
+    [validate, calculate, markEdited],
+  )
+
+  const {
+    expression,
+    setExpression,
+    input,
+    clear,
+    backspace,
+    toggleSign,
+    submit,
+  } = useKeypad({ onEquals: (expr) => void handleEquals(expr), onEdit: markEdited })
+
+  const handleKeyPress = useCallback(
+    (def: KeyDef) => {
+      switch (def.kind) {
+        case 'input':
+          if (def.value !== undefined) input(def.value)
+          break
+        case 'clear':
+          clear()
+          clearError()
+          break
+        case 'delete':
+          backspace()
+          break
+        case 'sign':
+          toggleSign()
+          break
+        case 'equals':
+          submit()
+          break
+        case 'empty':
+          break
+      }
+    },
+    [input, clear, clearError, backspace, toggleSign, submit],
+  )
+
+  const handleSelectHistory = useCallback(
+    (entry: HistoryEntry) => {
+      markEdited()
+      setExpression(entry.expression)
+    },
+    [setExpression, markEdited],
+  )
+
+  const firstOutput = result?.outputs[0] ?? 'result'
+  const value = result ? (result.results[firstOutput]?.value ?? null) : null
+  const error = clientError ?? serverError
+
+  const dismissError = useCallback(() => {
+    setClientError(null)
+    clearError()
+  }, [clearError])
+
+  const handleCopy = useCallback(async () => {
+    if (value === null || value === undefined) return
+    try {
+      await navigator.clipboard.writeText(String(value))
+      setCopied(true)
+    } catch {
+      setCopied(false)
+    }
+  }, [value])
 
   return (
-    <main className="calc-module app-shell">
-      <header className="app-header">
-        <p className="app-kicker">Calculadora · F1 Fundaciones</p>
-        <h1 className="app-title">components + tokens</h1>
-      </header>
-
-      <Card className="app-preview">
-        <div className="calc-display app-display" aria-label="Display de ejemplo">
-          0
-        </div>
-        <div className="app-row">
-          <Button variant="primary" size="md">Primary</Button>
-          <Button variant="secondary" size="md">Secondary</Button>
-          <Button variant="ghost" size="md">Ghost</Button>
-          <Button variant="danger" size="sm">Danger</Button>
-        </div>
-        <div className="app-row app-icons">
-          {ICON_NAMES.map((name) => (
-            <span key={name} className="app-icon-chip" title={name}>
-              <Icon name={name} size={22} />
+    <CalculatorLayout>
+      <h1 className="sr-only">Calculadora</h1>
+      <div className="calc-stack">
+        <Display expression={expression} result={value} isLoading={isLoading} />
+        <div className="calc-actions">
+          {result ? (
+            <span className="calc-meta">
+              {result.requestId} · {result.durationMs} ms
             </span>
-          ))}
+          ) : (
+            <span className="calc-meta" aria-hidden="true" />
+          )}
+          <button
+            type="button"
+            className="copy-btn"
+            onClick={() => void handleCopy()}
+            disabled={value === null || value === undefined}
+            title="Copiar resultado"
+          >
+            {copied ? '¡Copiado!' : 'Copiar'}
+          </button>
         </div>
-        <div className="app-row">
-          <button type="button" className="key key-number">7</button>
-          <button type="button" className="key key-operation">÷</button>
-          <button type="button" className="key key-function">AC</button>
-          <button type="button" className="key key-equals">=</button>
-        </div>
-      </Card>
-
-      {showToast ? (
-        <Toast
-          tone="info"
-          title="F1 lista para revisión visual"
-          message="Tokens, Button, Card, Icon, Toast y el icono provisto como componente."
-          onDismiss={() => setShowToast(false)}
-        />
-      ) : null}
-    </main>
+        <ErrorToast error={error} onDismiss={dismissError} />
+        <Keypad onKeyPress={handleKeyPress} disabled={isLoading} />
+        <HistoryPanel entries={history} onSelect={handleSelectHistory} onClear={clearHistory} />
+      </div>
+    </CalculatorLayout>
   )
 }
 

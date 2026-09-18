@@ -11,6 +11,7 @@ export interface UseCalculationResult {
   history: HistoryEntry[]
   calculate: (expression: string) => Promise<void>
   clearHistory: () => void
+  clearError: () => void
 }
 
 /** Estado + fetch + historial para el modo expression. Cancela la petición anterior. */
@@ -58,5 +59,7 @@ export function useCalculation(): UseCalculationResult {
     [push],
   )
 
-  return { result, error, isLoading, history, calculate, clearHistory }
+  const clearError = useCallback(() => setError(null), [])
+
+  return { result, error, isLoading, history, calculate, clearHistory, clearError }
 }
