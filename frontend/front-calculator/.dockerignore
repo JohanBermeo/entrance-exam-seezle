@@ -1,0 +1,28 @@
+# Version control
+.git/
+.gitignore
+
+# Docker files themselves
+Dockerfile
+.dockerignore
+
+# Local tooling and docs (not needed in the image)
+README.md
+.env
+.env.*
+
+# Build artifacts and dependencies
+node_modules
+dist
+
+# IDE and editor metadata
+.vscode/
+.idea/
+.cursor/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db

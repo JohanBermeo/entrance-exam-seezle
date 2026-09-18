@@ -30,6 +30,24 @@ pnpm typecheck  # tsc --noEmit
 pnpm test       # vitest run (jsdom + Testing Library + MSW)
 ```
 
+## Docker
+
+Imagen multi-stage (`node:22` → `nginx:1.27-alpine` con fallback SPA). Contexto: `frontend/front-calculator/`.
+
+```bash
+docker build -t front-calculator ./frontend/front-calculator
+docker run --rm -p 8080:80 front-calculator
+# http://localhost:8080
+```
+
+`VITE_API_BASE_URL` se incrusta en build (Vite). Para otro backend:
+
+```bash
+docker build --build-arg VITE_API_BASE_URL=http://api:8080 -t front-calculator ./frontend/front-calculator
+```
+
+El navegador llama a esa URL directamente: debe ser alcanzable desde el navegador, no solo entre contenedores.
+
 ## Arquitectura
 
 ```text
